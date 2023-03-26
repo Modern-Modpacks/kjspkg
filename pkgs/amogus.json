@@ -1,4 +1,7 @@
 {
+    "repo": "G_cat101/kjspkg-test",
+
+    "author": "G_cat",
     "description": "Sends a big mogus to every person that logs in",
     
     "versions": [6, 8],
