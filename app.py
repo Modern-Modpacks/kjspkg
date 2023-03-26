@@ -57,9 +57,9 @@ def _delete_project():
     for dir in SCRIPT_DIRS: rmtree(dir+"/.kjspkg")
 
 def install(pkg:str):
-    package = get()
+    package = get(f"https://github.com/Modern-Modpacks/kjspkg/raw/main/pkgs/{pkg}.json").json()
 
-    Repo.clone_from(url, to_path)
+    Repo.clone_from(f"https://github.com/{package['repo']}.git", _create_tmp(pkg))
 
     kjspkgfile["installed"].append(pkg)
 def removepkg(pkg:str):
@@ -121,7 +121,7 @@ def _parser(func:str="help", *args, **kwargs):
         FUNCTIONS[func](*args, **kwargs)
 
         with open(".kjspkg", "w") as f: dump(kjspkgfile, f)
-        if path.exists("tmp"): rmtree("tmp")
+        # if path.exists("tmp"): rmtree("tmp")
 
 if __name__=="__main__": 
     try: Fire(_parser)
