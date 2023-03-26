@@ -4,7 +4,7 @@ A simple package manager for KubeJS.
 
 ![badge](https://img.shields.io/badge/contributions-welcome-green)
 
-![logo](https://user-images.githubusercontent.com/79367505/227797641-6ce7d3d6-235b-4668-adfb-bef3c02a91d9.png)
+![logo](https://user-images.githubusercontent.com/79367505/227798123-5454e9b1-b39b-4c45-9e02-e18f2e807585.png)
 
 ## Installation
 
