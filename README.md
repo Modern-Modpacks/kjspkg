@@ -2,6 +2,10 @@
 
 A simple package manager for KubeJS.
 
+![badge](https://img.shields.io/badge/contributions-welcome-green)
+
+![logo](https://user-images.githubusercontent.com/79367505/227797641-6ce7d3d6-235b-4668-adfb-bef3c02a91d9.png)
+
 ## Installation
 
 ### Linux
