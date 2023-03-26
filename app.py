@@ -3,13 +3,14 @@
 # IMPORTS
 
 # Built-in modules
-from os import path, remove, mkdir
+from os import path, remove, mkdir, makedirs
 from shutil import rmtree
 from json import dump, load
 
 # External libraries
 from fire import Fire # CLI tool
 from requests import get
+from git import Repo
 
 # CONSTANTS
 VERSIONS = {
@@ -36,8 +37,13 @@ def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m"
 def _err(err:str):
     print("\u001b[31;1m"+err+"\u001b[0m")
     exit(1)
+def _create_tmp(path:str) -> str: 
+    makedirs("tmp/"+path)
+    return "tmp/"+path
 
 def _check_project() -> bool:
+    if (path.basename(path.curdir)=="kubejs"): return True
+
     for dir in SCRIPT_DIRS:
         if path.exists(dir): return True
     return False
@@ -51,6 +57,10 @@ def _delete_project():
     for dir in SCRIPT_DIRS: rmtree(dir+"/.kjspkg")
 
 def install(pkg:str):
+    package = get()
+
+    Repo.clone_from(url, to_path)
+
     kjspkgfile["installed"].append(pkg)
 def removepkg(pkg:str):
     kjspkgfile["installed"].remove(pkg)
@@ -107,8 +117,11 @@ def _parser(func:str="help", *args, **kwargs):
         init()
     else:
         kjspkgfile = load(open(".kjspkg"))
+
         FUNCTIONS[func](*args, **kwargs)
+
         with open(".kjspkg", "w") as f: dump(kjspkgfile, f)
+        if path.exists("tmp"): rmtree("tmp")
 
 if __name__=="__main__": 
     try: Fire(_parser)
