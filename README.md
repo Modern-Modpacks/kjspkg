@@ -47,7 +47,6 @@ kjspkg help
 ## Adding your own package
 
 1. Create a repository containing your scripts and assets
-    **Your "assets" folder and your "data" folder should not contain modid sub-directories, everything in them will be saved in assets/<package_name> and data/<package_name>. Please design your scripts with that in mind.**
 2. Fork this repo
 3. Clone it
 4. Add a "<package_name>.json" file to the "pkgs" directory
@@ -59,9 +58,11 @@ kjspkg help
 
         "author": "<your_name>",
         "description": "Description",
+        "license": "Your license",
         
         "versions": [<Version key numbers (see the numbers in parentheses in the table below). Can contain multiple numbers>],
-        "modloaders": [<Modloaders ("fabric"/"forge", "fabric" will for for quilt as well)>. Can contain multiple modloaders]
+        "modloaders": [<Modloaders ("fabric"/"forge", "fabric" will for for quilt as well)>. Can contain multiple modloaders],
+        "dependencies": [<package names that your package depends on, blank if none>]
     }
     ```
 
