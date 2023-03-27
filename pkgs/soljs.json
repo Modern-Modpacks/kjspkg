@@ -2,7 +2,7 @@
     "repo": "Gcat101/SoLJS",
 
     "author": "Prunoideae",
-    "description": "A port of the Spice of Life mod for 1.19, using only KubeJS. (Requires AppleSkin!)",
+    "description": "A port of the Spice of Life mod for 1.19, using only KubeJS. (Requires JEI and AppleSkin!)",
     "license": "LGPL-3.0",
     
     "versions": [9],
