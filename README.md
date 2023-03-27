@@ -16,7 +16,7 @@ curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.sh
 
 ### Windows
 
-Use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
+The only way to install this currently is through [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
 
 ## Usage
 
