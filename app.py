@@ -3,8 +3,9 @@
 # IMPORTS
 
 # Built-in modules
-from os import path, remove, mkdir, makedirs # Working with files
+from os import path, remove, getcwd, makedirs, walk # Working with files
 from shutil import rmtree, move # More file stuff
+from pathlib import Path # EVEN MORE FILE STUFF
 from json import dump, load # Json
 
 # External libraries
@@ -40,75 +41,115 @@ def _err(err:str): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     exit(1) # Quit
 def _create_tmp(path:str) -> str: # Create a temp directory and return its path
-    makedirs("tmp/"+path, exist_ok=True)
-    return "tmp/"+path
+    tmppath = path.join("tmp", path)
+    makedirs(tmppath, exist_ok=True)
+    return tmppath
 
 # PROJECT HELPER FUNCTIONS
 def _check_project() -> bool: # Check if the current directory is a kubejs directory
     for dir in SCRIPT_DIRS:
-        if path.exists(dir) and path.basename(path.abspath(path.curdir))=="kubejs": return True
+        if path.exists(dir) and path.basename(getcwd())=="kubejs": return True
     return False
-def _create_project_directories(): # Create .kjspkg directories
-    for dir in SCRIPT_DIRS:
-        if not path.exists(dir): mkdir(dir)
-        if not path.exists(dir+"/.kjspkg"): mkdir(dir+"/.kjspkg")
+def _create_project_directories():
+    for dir in SCRIPT_DIRS: makedirs(path.join(dir, ".kjspkg"), exist_ok=True)  # Create .kjspkg directories
+
 def _project_exists() -> bool: return path.exists(".kjspkg") # Check if a kjspkg project exists
 def _delete_project(): # Delete the project and all of the files
-    remove(".kjspkg")
-    for dir in SCRIPT_DIRS: rmtree(dir+"/.kjspkg")
-    for assetdir in SCRIPT_DIRS:
-        for pkg in kjspkgfile["installed"]: rmtree(assetdir+"/"+pkg)
+    for pkg in kjspkgfile["installed"].keys(): _remove_pkg(pkg, True) # Remove all packages
+    for dir in SCRIPT_DIRS: rmtree(path.join(dir, ".kjspkg")) # Remove .kjspkg dirs
+    remove(".kjspkg") # Remove .kjspkg file
 
 # PKG HELPER FUNCTIONS
-def _install_pkg(pkg:str, skipmissing:bool): # Install the pkg
-    if pkg in kjspkgfile["installed"]: return # If the pkg is already installed, do nothing
-
+def _pkg_info(pkg:str) -> dict: # Get info about the pkg
     package = get(f"https://github.com/Modern-Modpacks/kjspkg/raw/main/pkgs/{pkg}.json") # Get the pkg json
-    if package.status_code==404: 
-        if not skipmissing: _err(f"Package \"{pkg}\" does not exist") # If the json doesn't exist, err
+    if package.status_code==404: return # Return nothing if the pkg doesn't exist
+    return package.json() # Return the json object
+def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
+    if not update and pkg in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
+    if update: _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
+
+    package = _pkg_info(pkg) # Get pkg
+    if not package: # If pkg doesn't exist
+        if not skipmissing: _err(f"Package \"{pkg}\" does not exist") # Err
         else: return # Or just ingore
-    package = package.json() # Get the json object
 
     # Unsupported version/modloader errs
     if kjspkgfile["version"] not in package["versions"]: _err(f"Unsupported version 1.{10+kjspkgfile['version']} for package \"{pkg}\"")
     if kjspkgfile["modloader"] not in package["modloaders"]: _err(f"Unsupported modloader \"{kjspkgfile['modloader'].title()}\" for package \"{pkg}\"")
 
+    # Install dependencies
+    if "dependencies" in package.keys():
+        for dep in package["dependencies"]: _install_pkg(dep.lower(), False)
+
     tmpdir = _create_tmp(pkg) # Create a temp dir
     Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir) # Install the repo into the tmp dir
-    for dir in SCRIPT_DIRS+ASSET_DIRS: # Clone assets and scripts into the main kjs folders
-        tmppkgpath = tmpdir+"/"+dir
-        pkgpath = dir+"/.kjspkg/"+pkg if dir in SCRIPT_DIRS else dir+"/"+pkg
-        if path.exists(tmppkgpath): move(tmppkgpath, pkgpath)
+    for dir in SCRIPT_DIRS: # Clone scripts into the main kjs folders
+        tmppkgpath = path.join(tmpdir, dir)
+        if path.exists(tmppkgpath): move(tmppkgpath, path.join(dir, ".kjspkg", pkg))
+    assetfiles = [] # Pkg's asset files
+    for dir in ASSET_DIRS: # Clone assets
+        tmppkgpath = path.join(tmpdir, dir) # Get asset path
+        if not path.exists(tmppkgpath): continue
 
-    kjspkgfile["installed"].append(pkg) # Add the pkg name to .kjspkg
+        for dirpath, _, files in walk(tmppkgpath): # For each file in assets/data
+            for name in files:
+                tmppath = path.join(dirpath, name)
+                finalpath = path.sep.join(tmppath.split(path.sep)[2:])
+
+                move(tmppath, finalpath) # Move it to the permanent dir
+                assetfiles.append(finalpath) # Add it to assetfiles
+
+    kjspkgfile["installed"][pkg] = assetfiles # Add the pkg to installed
 def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
-    if pkg not in kjspkgfile["installed"]:
+    if pkg not in kjspkgfile["installed"].keys():
         if not skipmissing: _err(f"Package \"{pkg}\" is not installed") # If the pkg is not installed, err
         else: return # Or just ignore
 
-    for dir in SCRIPT_DIRS+ASSET_DIRS: # Remove all associated files
-        pkgpath = dir+"/.kjspkg/"+pkg if dir in SCRIPT_DIRS else dir+"/"+pkg
-        if path.exists(pkgpath): rmtree(pkgpath)
+    for dir in SCRIPT_DIRS: rmtree(path.join(dir, ".kjspkg"), pkg, ignore_errors=True) # Remove script files
+    for file in kjspkgfile["installed"][pkg]: # Remove asset files
+        if path.exists(file): remove(file)
 
-    kjspkgfile["installed"].remove(pkg) # Remove the pkg name from .kjspkg
+    del kjspkgfile["installed"][pkg] # Remove the pkg from installed
 
 # COMMAND FUNCTIONS
-def install(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Install pkgs
+def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=False): # Install pkgs
     for pkg in pkgs:
         pkg = pkg.lower()
-        _install_pkg(pkg, skipmissing)
-        if not quiet: print(_bold(f"Package \"${pkg}\" installed succesfully!"))
+        _install_pkg(pkg, update, skipmissing)
+        if not quiet: print(_bold(f"Package \"{pkg}\" installed succesfully!"))
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
     for pkg in pkgs:
         pkg = pkg.lower()
         _remove_pkg(pkg, skipmissing)
-        if not quiet: print(_bold(f"Package \"${pkg}\" removed succesfully!"))
-def listmods(*, count:bool=False): # List pkgs
+        if not quiet: print(_bold(f"Package \"{pkg}\" removed succesfully!"))
+def update(*pkgs:str, **kwargs): # Update pkgs
+    install(*pkgs, update=True, **kwargs)
+def listpkgs(*, count:bool=False): # List pkgs
     if count: # Only show the pkg count if the "count" option is passed
-        print(len(kjspkgfile["installed"]))
+        print(len(kjspkgfile["installed"].keys()))
         return
 
-    print("\n".join(kjspkgfile["installed"]))
+    if (len(kjspkgfile["installed"].keys())==0): # Easter egg if 0 pkg installed
+        print(_bold("*nothing here, noone around to help*"))
+        return
+
+    print("\n".join(kjspkgfile["installed"].keys())) # Print the list
+def pkginfo(pkg:str): # Print info about a pkg
+    info = _pkg_info(pkg) # Get the info
+
+    # Print it (pretty)
+    print(f"""
+{_bold(pkg.title())} by {_bold(info["author"])}
+
+{info["description"]}
+
+{_bold("Dependencies")}: {", ".join([i.title() for i in info["dependencies"]]) if "dependencies" in info.keys() and len(info["dependencies"])>0 else "*nothing here*"}
+{_bold("License")}: {info["license"] if "license" in info.keys() else "All Rights Reserved"}
+{_bold("GitHub")}: https://github.com/{info["repo"]}
+
+{_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
+{_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
+    """)
 def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:bool=False): # Init project
     global kjspkgfile
 
@@ -119,18 +160,18 @@ def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:boo
         else: exit(0)
 
     # Ask for missing params
-    if not version: version = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19): "))
+    if not version: version = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19): ")) # Version
     if version not in VERSIONS.keys(): _err("Unknown or unsupported version: "+version)
 
-    if not modloader: modloader = input(_bold("Input your modloader (forge/fabric/quilt): "))
+    if not modloader: modloader = input(_bold("Input your modloader (forge/fabric/quilt): ")) # Modloader
     modloader = modloader.lower()
     if modloader not in ("forge", "fabric", "quilt"): _err("Unknown or unsupported modloader: "+modloader.title())
 
-    _create_project_directories() # Create .kjgpkg directories
+    _create_project_directories() # Create .kjspkg directories
     kjspkgfile = {
         "version": VERSIONS[version],
         "modloader": modloader if modloader!="quilt" else "fabric",
-        "installed": []
+        "installed": {}
     }
     with open(".kjspkg", "w+") as f: dump(kjspkgfile, f) # Create .kjspkg file
     if not quiet: print(_bold("Project created!")) # Woo!
@@ -140,9 +181,12 @@ def info(): # Print the help page
     INFO = f"""
 {_bold("Commands:")}
 
-kjspkg install [pkgname1] [pkgname2] [--quiet/--skipmissing] - installs packages
+kjspkg install/download [pkgname1] [pkgname2] [--quiet/--skipmissing] [--update] - installs packages
 kjspkg remove/uninstall [pkgname1] [pkgname2] [--quiet/--skipmissing] - removes packages
+kjspkg update [pkgname1] [pkgname2] [--quiet/--skipmissing] - updates packages
+
 kjspkg list [--count] - lists packages (or outputs the count of them)
+kjspkg pkg [package] - shows info about the package
 
 kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloader>"] - inits a new project (will be run by default)
 kjspkg uninit [--confirm] - removes all packages and the project
@@ -165,9 +209,12 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     FUNCTIONS = { # Command mappings
         "install": install,
+        "download": install,
         "remove": removepkg,
         "uninstall": removepkg,
-        "list": listmods,
+        "update": update,
+        "list": listpkgs,
+        "pkg": pkginfo,
         "init": init,
         "uninit": uninit,
         "help": info,
@@ -187,11 +234,13 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
     # Clean up
     if path.exists(".kjspkg"): # If uninit wasn't called
         with open(".kjspkg", "w") as f: dump(kjspkgfile, f) # Save .kjspkg
-    if path.exists("tmp"): rmtree("tmp") # Remove tmp
 
 # RUN
 if __name__=="__main__": # If not imported
+    if path.exists("tmp"): rmtree("tmp") # Remove tmp
+
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
+    except TypeError: _err("Wrong syntax") # Wrong syntax err
 
 # Ok that's it bye

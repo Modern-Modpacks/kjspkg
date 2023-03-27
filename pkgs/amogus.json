@@ -3,7 +3,9 @@
 
     "author": "G_cat",
     "description": "Sends a big mogus to every person that logs in",
+    "license": "MIT",
     
     "versions": [6, 8],
-    "modloaders": ["forge", "fabric"]
+    "modloaders": ["forge", "fabric"],
+    "dependencies": []
 }
