@@ -153,8 +153,6 @@ def pkginfo(pkg:str): # Print info about a pkg
 def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:bool=False): # Init project
     global kjspkgfile
 
-    if not _check_project(): _err("Hmm... This directory doesn't look like a kubejs directory") # Wrong dir err
-
     if _project_exists(): # Override
         if not quiet and input("\u001b[31;1mA PROJECT ALREADY EXISTS IN THIS REPOSITORY, CREATING A NEW ONE OVERRIDES THE PREVIOUS ONE, ARE YOU SURE YOU WANT TO PROCEED? (y/N): \u001b[0m").lower()=="y" or override: _delete_project()
         else: exit(0)
@@ -222,10 +220,12 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
     }
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
-
-    if func not in ("init", "help") and not _project_exists(): # If a project is not found, call init
-        print(_bold("Project not found, a new one will be created.\n"))
-        init()
+    
+    if FUNCTIONS[func] not in (info, init, pkginfo): # If the command is not a any-dir command
+        if not _check_project(): _err("Hmm... This directory doesn't look like a kubejs directory") # Wrong dir err
+        if not _project_exists(): # If a project is not found, call init
+            print(_bold("Project not found, a new one will be created.\n"))
+            init()
 
     if path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Open .kjspkg
 
