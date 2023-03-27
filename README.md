@@ -72,7 +72,7 @@ kjspkg help
 
 | |Forge|Fabric/Quilt|
 |-|-----|------------|
-|1.19 (9)|![nottested_partial](https://img.shields.io/badge/Not%20Tested-Partial%20Support-green)|![nottested_partial](https://img.shields.io/badge/Not%20tested-Partial%20Support-green)|
+|1.19 (9)|![tested_partial](https://img.shields.io/badge/Tested-Partial%20Support-green)|![nottested_partial](https://img.shields.io/badge/Not%20tested-Partial%20Support-green)|
 |1.18 (8)|![nottested_partial](https://img.shields.io/badge/Not%20Tested-Partial%20Support-green)|![nottested_partial](https://img.shields.io/badge/Not%20tested-Partial%20Support-green)|
 |1.16 (6)|![tested_full](https://img.shields.io/badge/Tested-Full%20Support-brightgreen)|![nottested_partial](https://img.shields.io/badge/Not%20tested-Partial%20Support-green)|
 |1.12 (2)|![nottested_no](https://img.shields.io/badge/Not%20Tested-No%20Support-yellow)||
