@@ -241,6 +241,6 @@ if __name__=="__main__": # If not imported
 
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
-    # except TypeError: _err("Wrong syntax") # Wrong syntax err
+    except TypeError: _err("Wrong syntax") # Wrong syntax err
 
 # Ok that's it bye
