@@ -3,6 +3,8 @@ then
     sudo -v
 fi
 
+echo "Installation started..."
+
 sudo rm -f /usr/local/bin/kjspkg
 
 sudo touch /usr/local/bin/kjspkg
