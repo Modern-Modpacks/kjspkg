@@ -1,11 +1,13 @@
-if [ "$EUID" -ne 0 ] then
-    sudo su
+if [ `id -u` != 0 ]
+then
+    sudo -v
 fi
 
-rm /usr/local/bin/kjspkg
+sudo rm -f /usr/local/bin/kjspkg
 
-curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/app.py > /usr/local/bin/kjspkg
+sudo touch /usr/local/bin/kjspkg
+sudo sh -c "curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/app.py > /usr/local/bin/kjspkg"
 pip -q install $(curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/requirements.txt)
-chmod +x /usr/local/bin/kjspkg
+sudo chmod +x /usr/local/bin/kjspkg
 
 echo "Done!"
