@@ -8,6 +8,12 @@ A simple package manager for KubeJS.
 
 ## Installation & Update
 
+### Requirements
+
+* Python 3.8
+* Git
+* Curl
+
 ### Linux
 
 ```sh

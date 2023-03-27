@@ -136,6 +136,7 @@ def listpkgs(*, count:bool=False): # List pkgs
     print("\n".join(kjspkgfile["installed"].keys())) # Print the list
 def pkginfo(pkg:str): # Print info about a pkg
     info = _pkg_info(pkg) # Get the info
+    if not info: _err(f"Package {pkg} not found") # Err if pkg not found
 
     # Print it (pretty)
     print(f"""
