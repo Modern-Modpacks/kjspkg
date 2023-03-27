@@ -105,7 +105,7 @@ def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
         if not skipmissing: _err(f"Package \"{pkg}\" is not installed") # If the pkg is not installed, err
         else: return # Or just ignore
 
-    for dir in SCRIPT_DIRS: rmtree(path.join(dir, ".kjspkg"), pkg, ignore_errors=True) # Remove script files
+    for dir in SCRIPT_DIRS: rmtree(path.join(dir, ".kjspkg", pkg), ignore_errors=True) # Remove script files
     for file in kjspkgfile["installed"][pkg]: # Remove asset files
         if path.exists(file): remove(file)
 
