@@ -40,8 +40,8 @@ def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
 def _err(err:str): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     exit(1) # Quit
-def _create_tmp(path:str) -> str: # Create a temp directory and return its path
-    tmppath = path.join("tmp", path)
+def _create_tmp(pathintmp:str) -> str: # Create a temp directory and return its path
+    tmppath = path.join("tmp", pathintmp)
     makedirs(tmppath, exist_ok=True)
     return tmppath
 
@@ -241,6 +241,6 @@ if __name__=="__main__": # If not imported
 
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
-    except TypeError: _err("Wrong syntax") # Wrong syntax err
+    # except TypeError: _err("Wrong syntax") # Wrong syntax err
 
 # Ok that's it bye
