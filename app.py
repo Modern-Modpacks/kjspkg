@@ -4,7 +4,7 @@
 
 # Built-in modules
 from os import path, remove, getcwd, makedirs, walk # Working with files
-from shutil import rmtree, move # More file stuff
+from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from json import dump, load # Json
 
@@ -83,9 +83,16 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
 
     tmpdir = _create_tmp(pkg) # Create a temp dir
     Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir) # Install the repo into the tmp dir
-    for dir in SCRIPT_DIRS: # Clone scripts into the main kjs folders
+
+    licensefile = path.join(tmpdir, "LICENSE") 
+    if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.txt")
+    for dir in SCRIPT_DIRS: # Clone scripts & licenses into the main kjs folders
         tmppkgpath = path.join(tmpdir, dir)
-        if path.exists(tmppkgpath): move(tmppkgpath, path.join(dir, ".kjspkg", pkg))
+        finalpkgpath = path.join(dir, ".kjspkg", pkg)
+        if path.exists(tmppkgpath):
+            move(tmppkgpath, finalpkgpath) # Files
+            if path.exists(licensefile): copy(licensefile, finalpkgpath) # License
+
     assetfiles = [] # Pkg's asset files
     for dir in ASSET_DIRS: # Clone assets
         tmppkgpath = path.join(tmpdir, dir) # Get asset path
