@@ -1,3 +1,5 @@
 fire
 requests
 GitPython
+thefuzz
+python-Levenshtein

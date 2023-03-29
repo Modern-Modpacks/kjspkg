@@ -11,8 +11,11 @@ from stat import S_IWRITE # Windows stuff
 
 # External libraries
 from fire import Fire # CLI tool
+
 from requests import get # Requests
 from git import Repo, GitCommandNotFound # Git cloning
+
+from thefuzz import process # Fuzzy search
 
 # CONSTANTS
 VERSIONS = { # Version and version keys
@@ -66,8 +69,9 @@ def _delete_project(): # Delete the project and all of the files
     remove(".kjspkg") # Remove .kjspkg file
 
 # PKG HELPER FUNCTIONS
+def _pkgs_json() -> dict: return get(f"https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json").json() # Get the pkgs.json file
 def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
-    pkgregistry = get(f"https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json").json() # Get the pkgs.json file
+    pkgregistry = _pkgs_json() # Get the pkgs.json file
     if pkg not in pkgregistry.keys(): return # Return nothing if the pkg doesn't exist
     repo = pkgregistry[pkg] # Get the repo
 
@@ -181,6 +185,13 @@ def pkginfo(pkg:str): # Print info about a pkg
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
 {_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
     """)
+def search(*query:str): # Search for pkgs
+    query = " ".join(query) # Join spaces
+    
+    # Get results and print the best ones
+    results = process.extract(query, list(_pkgs_json().keys()))
+    for result, ratio in results:
+        if ratio>75: print(result)
 def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:bool=False): # Init project
     global kjspkgfile
 
@@ -244,6 +255,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         "update": update,
         "list": listpkgs,
         "pkg": pkginfo,
+        "search": search,
         "init": init,
         "uninit": uninit,
         "help": info,
@@ -252,7 +264,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
     
-    if FUNCTIONS[func] not in (info, init, pkginfo): # If the command is not a any-dir command
+    if FUNCTIONS[func] not in (info, init, pkginfo, search): # If the command is not a any-dir command
         if not _check_project(): _err("Hmm... This directory doesn't look like a kubejs directory") # Wrong dir err
         if not _project_exists(): # If a project is not found, call init
             print(_bold("Project not found, a new one will be created.\n"))
