@@ -66,10 +66,19 @@ def _delete_project(): # Delete the project and all of the files
     remove(".kjspkg") # Remove .kjspkg file
 
 # PKG HELPER FUNCTIONS
-def _pkg_info(pkg:str) -> dict: # Get info about the pkg
-    package = get(f"https://github.com/Modern-Modpacks/kjspkg/raw/main/pkgs/{pkg}.json") # Get the pkg json
-    if package.status_code==404: return # Return nothing if the pkg doesn't exist
-    return package.json() # Return the json object
+def _pkg_info(pkg:str, additionaldata:bool=False) -> dict: # Get info about the pkg
+    pkgregistry = get(f"https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json").json() # Get the pkgs.json file
+    if pkg not in pkgregistry.keys(): return # Return nothing if the pkg doesn't exist
+    repo = pkgregistry[pkg] # Get the repo
+
+    package = get(f"https://raw.githubusercontent.com/{repo}/main/.kjspkg").json() # Get package info
+
+    if additionaldata: # If the additional data is requested
+        package["repo"] = repo # Add the repo to info
+        pkglicense = get(f"https://api.github.com/repos/{repo}/license") # Get license
+        package["license"] = pkglicense.json()["license"]["spdx_id"] if pkglicense.status_code!=404 else "All Rights Reserved" # Add the license to info
+
+    return package # Return the json object
 def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
     if not update and pkg in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
@@ -83,9 +92,12 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
     if kjspkgfile["version"] not in package["versions"]: _err(f"Unsupported version 1.{10+kjspkgfile['version']} for package \"{pkg}\"")
     if kjspkgfile["modloader"] not in package["modloaders"]: _err(f"Unsupported modloader \"{kjspkgfile['modloader'].title()}\" for package \"{pkg}\"")
 
-    # Install dependencies
+    # Install dependencies & check for incompats
     if "dependencies" in package.keys():
         for dep in package["dependencies"]: _install_pkg(dep.lower(), False)
+    if "incompatibilities" in package.keys(): 
+        for i in kjspkgfile["installed"].keys(): 
+            if i in package["incompatibilities"]: _err(f"Incompatible package: "+i) # Throw err if incompats detected
 
     tmpdir = _create_tmp(pkg) # Create a temp dir
     Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir) # Install the repo into the tmp dir
@@ -151,7 +163,7 @@ def listpkgs(*, count:bool=False): # List pkgs
 
     print("\n".join(kjspkgfile["installed"].keys())) # Print the list
 def pkginfo(pkg:str): # Print info about a pkg
-    info = _pkg_info(pkg) # Get the info
+    info = _pkg_info(pkg, True) # Get the info
     if not info: _err(f"Package {pkg} not found") # Err if pkg not found
 
     # Print it (pretty)
@@ -161,7 +173,9 @@ def pkginfo(pkg:str): # Print info about a pkg
 {info["description"]}
 
 {_bold("Dependencies")}: {", ".join([i.title() for i in info["dependencies"]]) if "dependencies" in info.keys() and len(info["dependencies"])>0 else "*nothing here*"}
-{_bold("License")}: {info["license"] if "license" in info.keys() else "All Rights Reserved"}
+{_bold("Incompatibilities")}: {", ".join([i.title() for i in info["incompatibilities"]]) if "incompatibilities" in info.keys() and len(info["incompatibilities"])>0 else "*nothing here*"}
+
+{_bold("License")}: {info["license"]}
 {_bold("GitHub")}: https://github.com/{info["repo"]}
 
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
