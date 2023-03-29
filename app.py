@@ -66,15 +66,15 @@ def _delete_project(): # Delete the project and all of the files
     remove(".kjspkg") # Remove .kjspkg file
 
 # PKG HELPER FUNCTIONS
-def _pkg_info(pkg:str, additionaldata:bool=False) -> dict: # Get info about the pkg
+def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     pkgregistry = get(f"https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json").json() # Get the pkgs.json file
     if pkg not in pkgregistry.keys(): return # Return nothing if the pkg doesn't exist
     repo = pkgregistry[pkg] # Get the repo
 
     package = get(f"https://raw.githubusercontent.com/{repo}/main/.kjspkg").json() # Get package info
 
-    if additionaldata: # If the additional data is requested
-        package["repo"] = repo # Add the repo to info
+    package["repo"] = repo # Add the repo to info
+    if getlicense: # If the license is requested
         pkglicense = get(f"https://api.github.com/repos/{repo}/license") # Get license
         package["license"] = pkglicense.json()["license"]["spdx_id"] if pkglicense.status_code!=404 else "All Rights Reserved" # Add the license to info
 
