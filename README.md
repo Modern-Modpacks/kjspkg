@@ -56,25 +56,23 @@ kjspkg help
 ## Adding your own package
 
 1. Create a repository containing your scripts and assets
-2. Fork this repo
-3. Clone it
-4. Add a "<package_name>.json" file to the "pkgs" directory
-5. Format it like this:
+2. Add a file to your repo named `.kjspkg` and format it like this:
 
     ```json
     {
-        "repo": "yourname/reponame",
-
         "author": "<your_name>",
-        "description": "Description",
-        "license": "Your license",
+        "description": "<description>",
         
         "versions": [<Version key numbers (see the numbers in parentheses in the table below). Can contain multiple numbers>],
         "modloaders": [<Modloaders ("fabric"/"forge", "fabric" will for for quilt as well)>. Can contain multiple modloaders],
-        "dependencies": [<package names that your package depends on, blank if none>]
+        "dependencies": [<package names that your package depends on, blank if none>],
+        "incompatibilities": [<package names that your package is incompatible with, blank if none>]
     }
     ```
 
+3. Fork this repo
+4. Clone it
+5. Add your package to `pkgs.json` file. Format it like this: `"your_package_id": "your_github_name/your_repo_name",`
 6. Create a pull request
 7. Wait for it to be accepted
 
