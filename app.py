@@ -61,7 +61,7 @@ def _create_project_directories():
 
 def _project_exists() -> bool: return path.exists(".kjspkg") # Check if a kjspkg project exists
 def _delete_project(): # Delete the project and all of the files
-    for pkg in kjspkgfile["installed"].keys(): _remove_pkg(pkg, True) # Remove all packages
+    for pkg in list(kjspkgfile["installed"].keys()): _remove_pkg(pkg, True) # Remove all packages
     for dir in SCRIPT_DIRS: rmtree(path.join(dir, ".kjspkg"), onerror=_dumbass_windows_path_error) # Remove .kjspkg dirs
     remove(".kjspkg") # Remove .kjspkg file
 
