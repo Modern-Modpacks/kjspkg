@@ -11,7 +11,7 @@ from json import dump, load # Json
 # External libraries
 from fire import Fire # CLI tool
 from requests import get # Requests
-from git import Repo # Git cloning
+from git import Repo, GitCommandNotFound # Git cloning
 
 # CONSTANTS
 VERSIONS = { # Version and version keys
@@ -51,7 +51,7 @@ def _check_project() -> bool: # Check if the current directory is a kubejs direc
         if path.exists(dir) and path.basename(getcwd())=="kubejs": return True
     return False
 def _create_project_directories():
-    for dir in SCRIPT_DIRS: makedirs(path.join(dir, ".kjspkg"), exist_ok=True)  # Create .kjspkg directories
+    for dir in SCRIPT_DIRS+ASSET_DIRS: makedirs(path.join(dir, ".kjspkg"), exist_ok=True)  # Create .kjspkg directories
 
 def _project_exists() -> bool: return path.exists(".kjspkg") # Check if a kjspkg project exists
 def _delete_project(): # Delete the project and all of the files
@@ -250,5 +250,6 @@ if __name__=="__main__": # If not imported
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
     except TypeError: _err("Wrong syntax") # Wrong syntax err
+    except GitCommandNotFound: _err("Git not found. Install it here: https://git-scm.com/downloads") # Git not found err
 
 # Ok that's it bye
