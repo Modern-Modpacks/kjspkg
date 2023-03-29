@@ -103,6 +103,7 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
                 tmppath = path.join(dirpath, name)
                 finalpath = path.sep.join(tmppath.split(path.sep)[2:])
 
+                makedirs(path.sep.join(finalpath.split(path.sep)[:-1]), exist_ok=True) # Create parent dirs
                 move(tmppath, finalpath) # Move it to the permanent dir
                 assetfiles.append(finalpath) # Add it to assetfiles
 
