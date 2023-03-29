@@ -10,19 +10,22 @@ A simple package manager for KubeJS.
 
 ### Requirements
 
-* Python 3.8
-* Git
-* Curl
+* [Python 3.8](https://www.python.org/) (or higher)
+* Pip
+* [Git](https://git-scm.com/)
+* [Curl](https://curl.se/) (probably pre-installed)
 
 ### Linux
 
 ```sh
-curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.sh | sh
+curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.sh | sudo sh
 ```
 
 ### Windows
 
-The only way to install this currently is through [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
+Download [this bat file](https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.bat) and run it
+
+or use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
 
 ## Usage
 
