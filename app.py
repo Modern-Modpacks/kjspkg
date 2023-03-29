@@ -7,7 +7,6 @@ from os import path, remove, getcwd, makedirs, walk, chmod # Working with files
 from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from json import dump, load # Json
-from platform import system # Get the os
 from stat import S_IWRITE # Windows stuff
 
 # External libraries
@@ -42,9 +41,7 @@ def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
 def _err(err:str): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     exit(1) # Quit
-def _delete_dir(dir:str): # Recursively remove dir (windows compat)
-    if system().lower()=="windows": chmod(dir, S_IWRITE) # If on windows, make the directory writable
-    rmtree(dir) # Remove the dir
+def _dumbass_windows_path_error(p:str): chmod(p, S_IWRITE) # Dumbass windows path error
 
 # TMP HELPER FUNCTIONS
 def _create_tmp(pathintmp:str) -> str: # Create a temp directory and return its path
@@ -52,7 +49,7 @@ def _create_tmp(pathintmp:str) -> str: # Create a temp directory and return its 
     makedirs(tmppath, exist_ok=True)
     return tmppath
 def _clear_tmp(): # Clear tmp directory
-    if path.exists("tmp"): _delete_dir("tmp") # Delete if exists
+    if path.exists("tmp"): rmtree("tmp", onerror=_dumbass_windows_path_error) # Delete if exists
 
 # PROJECT HELPER FUNCTIONS
 def _check_project() -> bool: # Check if the current directory is a kubejs directory
@@ -65,7 +62,7 @@ def _create_project_directories():
 def _project_exists() -> bool: return path.exists(".kjspkg") # Check if a kjspkg project exists
 def _delete_project(): # Delete the project and all of the files
     for pkg in kjspkgfile["installed"].keys(): _remove_pkg(pkg, True) # Remove all packages
-    for dir in SCRIPT_DIRS: _delete_dir(path.join(dir, ".kjspkg")) # Remove .kjspkg dirs
+    for dir in SCRIPT_DIRS: rmtree(path.join(dir, ".kjspkg"), onerror=_dumbass_windows_path_error) # Remove .kjspkg dirs
     remove(".kjspkg") # Remove .kjspkg file
 
 # PKG HELPER FUNCTIONS
@@ -122,7 +119,9 @@ def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
         if not skipmissing: _err(f"Package \"{pkg}\" is not installed") # If the pkg is not installed, err
         else: return # Or just ignore
 
-    for dir in SCRIPT_DIRS: _delete_dir(path.join(dir, ".kjspkg", pkg), ignore_errors=True) # Remove script files
+    for dir in SCRIPT_DIRS: # Remove script files
+        scriptpath = path.join(dir, ".kjspkg", pkg)
+        if path.exists(scriptpath): rmtree(scriptpath, onerror=_dumbass_windows_path_error)
     for file in kjspkgfile["installed"][pkg]: # Remove asset files
         if path.exists(file): remove(file)
 
