@@ -8,6 +8,7 @@ from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from json import dump, load # Json
 from stat import S_IWRITE # Windows stuff
+from warnings import filterwarnings # Disable the dumb fuzz warning
 
 # External libraries
 from fire import Fire # CLI tool
@@ -15,6 +16,7 @@ from fire import Fire # CLI tool
 from requests import get # Requests
 from git import Repo, GitCommandNotFound # Git cloning
 
+filterwarnings("ignore") # Ignore the warning thefuzz produces
 from thefuzz import process # Fuzzy search
 
 # CONSTANTS
