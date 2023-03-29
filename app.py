@@ -41,7 +41,7 @@ def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
 def _err(err:str): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     exit(1) # Quit
-def _dumbass_windows_path_error(p:str): chmod(p, S_IWRITE) # Dumbass windows path error
+def _dumbass_windows_path_error(_, p:str, _): chmod(p, S_IWRITE) # Dumbass windows path error
 
 # TMP HELPER FUNCTIONS
 def _create_tmp(pathintmp:str) -> str: # Create a temp directory and return its path
