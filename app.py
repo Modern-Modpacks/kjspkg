@@ -243,10 +243,11 @@ kjspkg uninit [--confirm] - removes all packages and the project
 
 kjspkg help/info - shows this message
 
-{_bold("Contributors:")}
+{_bold("Credits:")}
 
 Modern Modpacks - owner
 G_cat101 - coder
+Juh9870 - Wanted to be here
     """
 
     print(INFO)
