@@ -16,9 +16,9 @@ from fire import Fire # CLI tool
 from requests import get # Requests
 from git import Repo, GitCommandNotFound # Git cloning
 
-filterwarnings("ignore") # Ignore the warning thefuzz produces
+filterwarnings("ignore", r"UserWarning") # Ignore the warning thefuzz produces
 from thefuzz import process # Fuzzy search
-filterwarnings("default") # Resume the warnings
+filterwarnings("default", r"UserWarning") # Resume the warnings
 
 # CONSTANTS
 VERSIONS = { # Version and version keys
