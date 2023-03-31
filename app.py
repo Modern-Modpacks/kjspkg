@@ -94,7 +94,12 @@ def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     return package # Return the json object
 def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
     if not update and pkg in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
-    if update: _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
+    if update: 
+        _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
+
+        if pkg=="*": # If updating all packages
+            for p in kjspkgfile["installed"].keys(): _install_pkg(p, True, skipmissing) # Update all packages
+            return
 
     package = _pkg_info(pkg) # Get pkg
     if not package: # If pkg doesn't exist
@@ -154,10 +159,17 @@ def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
 
 # COMMAND FUNCTIONS
 def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=False): # Install pkgs
+    if update and not pkgs:
+        _install_pkg("*", True, skipmissing)
+        if not quiet: print(_bold(f"All packages updated succesfully!"))
+        return
+
     for pkg in pkgs:
         pkg = pkg.lower()
+
+        if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing: _err(f"Package \"{pkg}\" not found")
         _install_pkg(pkg, update, skipmissing)
-        if not quiet: print(_bold(f"Package \"{pkg}\" installed succesfully!"))
+        if not quiet: print(_bold(f"Package \"{pkg}\" {'installed' if not update else 'updated'} succesfully!"))
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
     for pkg in pkgs:
         pkg = pkg.lower()
@@ -165,6 +177,8 @@ def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkg
         if not quiet: print(_bold(f"Package \"{pkg}\" removed succesfully!"))
 def update(*pkgs:str, **kwargs): # Update pkgs
     install(*pkgs, update=True, **kwargs)
+def updateall(**kwargs): # Update all pkgs
+    update("*", **kwargs)
 def listpkgs(*, count:bool=False): # List pkgs
     if count: # Only show the pkg count if the "count" option is passed
         print(len(kjspkgfile["installed"].keys()))
@@ -232,7 +246,8 @@ def info(): # Print the help page
 
 kjspkg install/download [pkgname1] [pkgname2] [--quiet/--skipmissing] [--update] - installs packages
 kjspkg remove/uninstall [pkgname1] [pkgname2] [--quiet/--skipmissing] - removes packages
-kjspkg update [pkgname1] [pkgname2] [--quiet/--skipmissing] - updates packages
+kjspkg update [pkgname1/*] [pkgname2] [--quiet/--skipmissing] - updates packages
+kjspkg updateall [--quiet/--skipmissing] - updates all packages
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
 kjspkg pkg [package] - shows info about the package
@@ -264,6 +279,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         "remove": removepkg,
         "uninstall": removepkg,
         "update": update,
+        "updateall": updateall,
         "list": listpkgs,
         "pkg": pkginfo,
         "search": search,
