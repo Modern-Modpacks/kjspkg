@@ -96,7 +96,7 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
     if not update and pkg in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
         if pkg=="*": # If updating all packages
-            for p in kjspkgfile["installed"].keys(): _install_pkg(p, True, skipmissing) # Update all packages
+            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, skipmissing) # Update all packages
             return
 
         _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
