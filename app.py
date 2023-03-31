@@ -159,17 +159,15 @@ def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
 
 # COMMAND FUNCTIONS
 def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=False): # Install pkgs
-    if update and not pkgs:
-        _install_pkg("*", True, skipmissing)
-        if not quiet: print(_bold(f"All packages updated succesfully!"))
-        return
+    if update and not pkgs: pkgs = ("*",)
 
     for pkg in pkgs:
         pkg = pkg.lower()
 
         if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{pkg}\" not found")
         _install_pkg(pkg, update, skipmissing)
-        if not quiet: print(_bold(f"Package \"{pkg}\" {'installed' if not update else 'updated'} succesfully!"))
+        if not quiet and pkg=="*": print(_bold(f"All packages updated succesfully!"))
+        elif not quiet: print(_bold(f"Package \"{pkg}\" {'installed' if not update else 'updated'} succesfully!"))
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
     for pkg in pkgs:
         pkg = pkg.lower()
