@@ -65,8 +65,8 @@ kjspkg help
         
         "versions": [<Version key numbers (see the numbers in parentheses in the table below). Can contain multiple numbers>],
         "modloaders": [<Modloaders ("fabric"/"forge", "fabric" will for quilt as well)>. Can contain multiple modloaders],
-        "dependencies": [<package names that your package depends on, blank if none>],
-        "incompatibilities": [<package names that your package is incompatible with, blank if none>]
+        "dependencies": [<Package names that your package depends on, blank if none>],
+        "incompatibilities": [<Package names that your package is incompatible with, blank if none>]
     }
     ```
 
