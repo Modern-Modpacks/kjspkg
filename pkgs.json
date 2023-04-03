@@ -7,5 +7,7 @@
 
     "soljs": "gcatkjspkgs/SoLJS",
     "tic-deco-fix": "gcatkjspkgs/tcondecofix",
-    "chipped-rei-group": "gcatkjspkgs/group-chipped-rei"
+    "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
+
+    "create-depot-crafting": "gcatkjspkgs/create-depot-crafting@fabric"
 }
