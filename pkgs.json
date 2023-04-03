@@ -8,6 +8,8 @@
     "soljs": "gcatkjspkgs/SoLJS",
     "tic-deco-fix": "gcatkjspkgs/tcondecofix",
     "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
+    "entropy-manipulator-create-depot": "gcatkjspkgs/entropy-manipulator-create-depot",
 
-    "create-depot-crafting": "gcatkjspkgs/create-depot-crafting@fabric"
+    "create-depot-crafting": "gcatkjspkgs/create-depot-crafting@fabric",
+    "create-depot-crafting-forge": "gcatkjspkgs/create-depot-crafting@forge"
 }
