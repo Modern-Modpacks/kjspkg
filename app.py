@@ -291,19 +291,19 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
     
-    helperfunc = False
+    helperfunc = True
     if FUNCTIONS[func] not in (info, init, pkginfo, search): # If the command is not a any-dir command
         if not _project_exists(): # If a project is not found, call init
             print(_bold("Project not found, a new one will be created.\n"))
             init()
         if path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Open .kjspkg
 
-        helperfunc = True # Set the helperfunc var
+        helperfunc = False # Set the helperfunc var
 
     FUNCTIONS[func](*args, **kwargs) # Run the command
 
     # Clean up
-    if path.exists(".kjspkg") and not helperfunc: # If uninit wasn't called and the command isn't a help command
+    if path.exists(".kjspkg") and not helperfunc: # If uninit wasn't called and the command isn't a helper command
         with open(".kjspkg", "w") as f: dump(kjspkgfile, f) # Save .kjspkg
 
 # RUN
