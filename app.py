@@ -64,12 +64,14 @@ def _check_project() -> bool: # Check if the current directory is a kubejs direc
 def _create_project_directories():
     for dir in SCRIPT_DIRS+ASSET_DIRS: makedirs(dir, exist_ok=True)  # Create asset and script directories
     for dir in SCRIPT_DIRS: makedirs(path.join(dir, ".kjspkg"), exist_ok=True)  # Create .kjspkg directories
-
 def _project_exists() -> bool: return path.exists(".kjspkg") # Check if a kjspkg project exists
 def _delete_project(): # Delete the project and all of the files
     for pkg in list(kjspkgfile["installed"].keys()): _remove_pkg(pkg, True) # Remove all packages
     for dir in SCRIPT_DIRS: rmtree(path.join(dir, ".kjspkg"), onerror=_dumbass_windows_path_error) # Remove .kjspkg dirs
     remove(".kjspkg") # Remove .kjspkg file
+def _enable_reflection(): # Enable reflection on 1.16
+    with open(path.join("config", "common.properties"), "a+") as f:
+        if ("invertClassLoader=true" not in f.read().splitlines()): f.write("invertClassLoader=true")
 
 # PKG HELPER FUNCTIONS
 def _pkgs_json() -> dict: return get(f"https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json").json() # Get the pkgs.json file
@@ -189,13 +191,18 @@ def listpkgs(*, count:bool=False): # List pkgs
         return
 
     print("\n".join(kjspkgfile["installed"].keys())) # Print the list
-def pkginfo(pkg:str): # Print info about a pkg
+def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
     info = _pkg_info(pkg, True) # Get the info
     if not info: _err(f"Package {pkg} not found") # Err if pkg not found
 
+    # Print it (scripty)
+    if script:
+        print(info)
+        return
+
     # Print it (pretty)
     print(f"""
-{_bold(pkg.title())} by {_bold(info["author"])}
+{_bold(pkg.replace("-", " ").title())} by {_bold(info["author"])}
 
 {info["description"]}
 
@@ -227,14 +234,17 @@ def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:boo
     # Ask for missing params
     if not version: version = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19): ")) # Version
     if version not in VERSIONS.keys(): _err("Unknown or unsupported version: "+version)
+    version = VERSIONS[version]
 
     if not modloader: modloader = input(_bold("Input your modloader (forge/fabric/quilt): ")) # Modloader
     modloader = modloader.lower()
     if modloader not in ("forge", "fabric", "quilt"): _err("Unknown or unsupported modloader: "+modloader.title())
 
     _create_project_directories() # Create .kjspkg directories
+    if version==6: _enable_reflection() # Enable reflection in the config for 1.16.5
+
     kjspkgfile = {
-        "version": VERSIONS[version],
+        "version": version,
         "modloader": modloader if modloader!="quilt" else "fabric",
         "installed": {}
     }
@@ -252,7 +262,7 @@ kjspkg update [pkgname1/*] [pkgname2] [--quiet/--skipmissing] - updates packages
 kjspkg updateall [--quiet/--skipmissing] - updates all packages
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
-kjspkg pkg [package] - shows info about the package
+kjspkg pkg [package] [--script] - shows info about the package
 kjspkg search [query] - searches for packages with a similar name
 
 kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloader>"] - inits a new project (will be run by default)
@@ -293,19 +303,16 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
     
-    helperfunc = True
-    if FUNCTIONS[func] not in (info, init, pkginfo, search): # If the command is not a any-dir command
-        if not _project_exists(): # If a project is not found, call init
-            print(_bold("Project not found, a new one will be created.\n"))
-            init()
-        if path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Open .kjspkg
-
-        helperfunc = False # Set the helperfunc var
+    helperfuncs = (info, init, pkginfo, search) # Helper commands that don't require a project
+    if FUNCTIONS[func] not in helperfuncs and not _project_exists(): # If a project is not found, call init
+        print(_bold("Project not found, a new one will be created.\n"))
+        init()
+    if (FUNCTIONS[func]==init or FUNCTIONS[func] not in helperfuncs) and path.exists(".kjspkg") : kjspkgfile = load(open(".kjspkg")) # Open .kjspkg
 
     FUNCTIONS[func](*args, **kwargs) # Run the command
 
     # Clean up
-    if path.exists(".kjspkg") and not helperfunc: # If uninit wasn't called and the command isn't a helper command
+    if path.exists(".kjspkg") and not FUNCTIONS[func] not in helperfuncs: # If uninit wasn't called and the command isn't a helper command
         with open(".kjspkg", "w") as f: dump(kjspkgfile, f) # Save .kjspkg
 
 # RUN
