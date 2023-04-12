@@ -16,9 +16,6 @@ from fire import Fire # CLI tool
 from requests import get # Requests
 from git import Repo, GitCommandNotFound # Git cloning
 
-filterwarnings("ignore") # Ignore the warning thefuzz produces
-from thefuzz import process # Fuzzy search
-
 # CONSTANTS
 VERSIONS = { # Version and version keys
     "1.12.2": 2,
@@ -215,13 +212,22 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
 {_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
     """)
-def search(*query:str): # Search for pkgs
-    query = "".join(query) # Join spaces
-    
+def listall(*, search:str=""): # List all pkgs
+    allpkgs = list(_pkgs_json().keys()) # All package names
+
+    if not search: # If no search query
+        print("\n".join(allpkgs)) # Print all pkg names
+        return
+
+    filterwarnings("ignore") # Ignore the warning thefuzz produces
+    from thefuzz import process # Fuzzy search
+
     # Get results and print the best ones
-    results = process.extract(query, list(_pkgs_json().keys()))
+    results = process.extract(search, allpkgs)
     for result, ratio in results:
         if ratio>75: print(result)
+def search(*query:str): # Search for pkgs
+    listall(search="-".join(query)) # Call listall with joined spaces
 def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:bool=False): # Init project
     global kjspkgfile
 
@@ -263,6 +269,7 @@ kjspkg updateall [--quiet/--skipmissing] - updates all packages
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
 kjspkg pkg [package] [--script] - shows info about the package
+kjspkg listall/all [--search "<query>"] - lists all packages
 kjspkg search [query] - searches for packages with a similar name
 
 kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloader>"] - inits a new project (will be run by default)
@@ -294,6 +301,8 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         "updateall": updateall,
         "list": listpkgs,
         "pkg": pkginfo,
+        "listall": listall,
+        "all": listall,
         "search": search,
         "init": init,
         "uninit": uninit,
@@ -303,7 +312,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
     
-    helperfuncs = (info, init, pkginfo, search) # Helper commands that don't require a project
+    helperfuncs = (info, init, pkginfo, listall, search) # Helper commands that don't require a project
     if FUNCTIONS[func] not in helperfuncs and not _project_exists(): # If a project is not found, call init
         print(_bold("Project not found, a new one will be created.\n"))
         init()
