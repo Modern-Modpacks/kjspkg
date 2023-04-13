@@ -18,7 +18,7 @@ A simple package manager for KubeJS.
 ### Linux
 
 ```sh
-curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.sh | sudo sh
+curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.sh | sh
 ```
 
 ### Windows
