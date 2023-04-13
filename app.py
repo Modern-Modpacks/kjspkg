@@ -276,6 +276,7 @@ kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloade
 kjspkg uninit [--confirm] - removes all packages and the project
 
 kjspkg help/info - shows this message
+kjspkg gui - shows info about the GUI app
 
 {_bold("Credits:")}
 
@@ -285,6 +286,8 @@ Juh9870 - Wanted to be here
     """
 
     print(INFO)
+def guiinfo(): # Print info about the GUI app
+    print(f"{_bold('Did you know there is a GUI app for KJSPKG?')} Check it out at https://github.com/Modern-Modpacks/kjspkg-gui!")
     
 # PARSER FUNCTION
 def _parser(func:str="help", *args, help:bool=False, **kwargs):
@@ -307,7 +310,8 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         "init": init,
         "uninit": uninit,
         "help": info,
-        "info": info
+        "info": info,
+        "gui": guiinfo
     }
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
