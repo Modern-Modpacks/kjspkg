@@ -316,7 +316,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
     
-    helperfuncs = (info, init, pkginfo, listall, search) # Helper commands that don't require a project
+    helperfuncs = (info, guiinfo, init, pkginfo, listall, search) # Helper commands that don't require a project
     if FUNCTIONS[func] not in helperfuncs and not _project_exists(): # If a project is not found, call init
         print(_bold("Project not found, a new one will be created.\n"))
         init()
