@@ -212,9 +212,12 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
 {_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
     """)
-def listall(*, search:str=""): # List all pkgs
+def listall(*, count:bool=False, search:str=""): # List all pkgs
     allpkgs = list(_pkgs_json().keys()) # All package names
 
+    if count: # If count is true
+        print(len(allpkgs)) # Print the pkg count
+        return
     if not search: # If no search query
         print("\n".join(allpkgs)) # Print all pkg names
         return
@@ -269,7 +272,7 @@ kjspkg updateall [--quiet/--skipmissing] - updates all packages
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
 kjspkg pkg [package] [--script] - shows info about the package
-kjspkg listall/all [--search "<query>"] - lists all packages
+kjspkg listall/all [--count] [--search "<query>"] - lists all packages
 kjspkg search [query] - searches for packages with a similar name
 
 kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloader>"] - inits a new project (will be run by default)
