@@ -90,7 +90,7 @@ def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     if getlicense: # If the license is requested
         pkglicense = get(f"https://api.github.com/repos/{repo}/license?ref={branch}") # Get license
         if pkglicense.status_code!=403: package["license"] = pkglicense.json()["license"]["spdx_id"] if pkglicense.status_code!=404 else "All Rights Reserved" # Add the license to info
-        if ("license" not in package.keys() or package["license"]=="NOASSERTION"): package["license"] = f"Other ({pkglicense.json()['html_url']})" # Custom licenses or api rate exceeded
+        if ("license" not in package.keys() or package["license"]=="NOASSERTION"): package["license"] = f"Other ({pkglicense.json()['html_url'] if pkglicense.status_code!=403 else 'https://github.com/Modern-Modpacks/kjspkg/blob/'+branch+'/LICENSE'})" # Custom licenses or api rate exceeded
 
     return package # Return the json object
 def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
