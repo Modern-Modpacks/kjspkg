@@ -6,7 +6,7 @@
 from os import path, remove, getcwd, makedirs, walk, chmod, system # Working with files
 from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
-from json import dump, load # Json
+from json import dump, load, dumps # Json
 from stat import S_IWRITE # Windows stuff
 from warnings import filterwarnings # Disable the dumb fuzz warning
 
@@ -194,7 +194,7 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 
     # Print it (scripty)
     if script:
-        print(info)
+        print(dumps(info))
         return
 
     # Print it (pretty)
