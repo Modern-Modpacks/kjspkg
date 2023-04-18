@@ -3,7 +3,7 @@
 # IMPORTS
 
 # Built-in modules
-from os import path, remove, getcwd, makedirs, walk, chmod # Working with files
+from os import path, remove, getcwd, makedirs, walk, chmod, system # Working with files
 from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from json import dump, load # Json
@@ -295,6 +295,8 @@ def guiinfo(): # Print info about the GUI app
 # PARSER FUNCTION
 def _parser(func:str="help", *args, help:bool=False, **kwargs):
     global kjspkgfile
+
+    system("") # Enable color codes on windows, don't ask me why
 
     if help: func="help"
 
