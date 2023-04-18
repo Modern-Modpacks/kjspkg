@@ -3,7 +3,7 @@
 # IMPORTS
 
 # Built-in modules
-from os import path, remove, getcwd, makedirs, walk, chmod, system # Working with files
+from os import path, remove, getcwd, makedirs, walk, chmod, system, environ # Working with files
 from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from json import dump, load, dumps # Json
@@ -88,7 +88,7 @@ def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     package["branch"] = branch # Add the branch to info
 
     if getlicense: # If the license is requested
-        pkglicense = get(f"https://api.github.com/repos/{repo}/license?ref={branch}") # Get license
+        pkglicense = get(f"https://api.github.com/repos/{repo}/license?ref={branch}", headers={"Authorization": "Bearer "+environ.get("gh_token")}) # Get license
         package["license"] = pkglicense.json()["license"]["spdx_id"] if pkglicense.status_code!=404 else "All Rights Reserved" # Add the license to info
         if (package["license"]=="NOASSERTION"): package["license"] = f"Other ({pkglicense.json()['html_url']})" # Custom licenses
 
