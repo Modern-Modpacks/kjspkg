@@ -242,7 +242,7 @@ def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:boo
 
     # Ask for missing params
     if not version: version = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19): ")) # Version
-    if version not in VERSIONS.keys(): _err("Unknown or unsupported version: "+version)
+    if version not in VERSIONS.keys(): _err("Unknown or unsupported version: "+str(version))
     version = VERSIONS[version]
 
     if not modloader: modloader = input(_bold("Input your modloader (forge/fabric/quilt): ")) # Modloader
@@ -325,12 +325,12 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
     if FUNCTIONS[func] not in helperfuncs and not _project_exists(): # If a project is not found, call init
         print(_bold("Project not found, a new one will be created.\n"))
         init()
-    if (FUNCTIONS[func]==init or FUNCTIONS[func] not in helperfuncs) and path.exists(".kjspkg") : kjspkgfile = load(open(".kjspkg")) # Open .kjspkg
+    if (FUNCTIONS[func]==init or FUNCTIONS[func] not in helperfuncs) and path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Open .kjspkg
 
     FUNCTIONS[func](*args, **kwargs) # Run the command
 
     # Clean up
-    if path.exists(".kjspkg") and not FUNCTIONS[func] not in helperfuncs: # If uninit wasn't called and the command isn't a helper command
+    if path.exists(".kjspkg") and FUNCTIONS[func] not in helperfuncs: # If uninit wasn't called and the command isn't a helper command
         with open(".kjspkg", "w") as f: dump(kjspkgfile, f) # Save .kjspkg
 
 # RUN
