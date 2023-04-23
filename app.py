@@ -231,8 +231,12 @@ def listall(*, count:bool=False, search:str=""): # List all pkgs
         if ratio>75: print(result)
 def search(*query:str): # Search for pkgs
     listall(search="-".join(query)) # Call listall with joined spaces
-def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:bool=False): # Init project
+def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:bool=False, cancreate:str=None): # Init project
     global kjspkgfile
+
+    if cancreate: # Scriptable cancreate option
+        print(_check_project())
+        return
 
     if not _check_project(): _err("Hmm... This directory doesn't look like a kubejs directory") # Wrong dir err
 
@@ -275,7 +279,7 @@ kjspkg pkg [package] [--script] - shows info about the package
 kjspkg listall/all [--count] [--search "<query>"] - lists all packages
 kjspkg search [query] - searches for packages with a similar name
 
-kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloader>"] - inits a new project (will be run by default)
+kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloader>"] [--cancreate "<path>"] - inits a new project (will be run by default)
 kjspkg uninit [--confirm] - removes all packages and the project
 
 kjspkg help/info - shows this message

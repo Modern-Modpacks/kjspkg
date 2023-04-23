@@ -5,9 +5,11 @@
 
     "cutscenejs": "TheRealQuentin765/cutscenes-kubejs",
 
-    "soljs": "gcatkjspkgs/SoLJS",
     "tic-deco-fix": "gcatkjspkgs/tcondecofix",
     "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
+
+    "soljs": "gcatkjspkgs/SoLJS",
+    "pongjs": "gcatkjspkgs/PongJS",
 
     "entropy-manipulator-create-depot": "gcatkjspkgs/entropy-manipulator-create-depot",
     "hardcore-air-supply": "gcatkjspkgs/hardcore-air-supply",
