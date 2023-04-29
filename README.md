@@ -56,7 +56,8 @@ kjspkg help
 ## Adding your own package
 
 1. Create a repository containing your scripts and assets
-2. Add a file to your repo named `.kjspkg` and format it like this:
+2. [Don't forget to license your code](https://choosealicense.com/)
+3. Add a file to your repo named `.kjspkg` and format it like this:
 
     ```json
     {
@@ -70,12 +71,12 @@ kjspkg help
     }
     ```
 
-3. Fork this repo
-4. Clone it
-5. Add your package to `pkgs.json` file. Format it like this: `"your_package_id": "your_github_name/your_repo_name",`
+4. Fork this repo
+5. Clone it
+6. Add your package to `pkgs.json` file. Format it like this: `"your_package_id": "your_github_name/your_repo_name",`
     * You can specify the branch by adding `@branch_name` at the end of the string, otherwise it will automatically use the `main` branch
-6. Create a pull request
-7. Wait for it to be accepted
+7. Create a pull request
+8. Wait for it to be accepted
 
 ## Supported versions
 
