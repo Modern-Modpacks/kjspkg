@@ -43,6 +43,7 @@ def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
 def _err(err:str): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     exit(1) # Quit
+def _remove_prefix(pkgname:str) -> str: return pkgname.split(":")[-1]
 def _dumbass_windows_path_error(f, p:str, e): chmod(p, S_IWRITE) # Dumbass windows path error
 
 # TMP HELPER FUNCTIONS
@@ -73,6 +74,21 @@ def _enable_reflection(): # Enable reflection on 1.16
 # PKG HELPER FUNCTIONS
 def _pkgs_json() -> dict: return get(f"https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json").json() # Get the pkgs.json file
 def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
+    prefix = pkg.split(":")[0] if len(pkg.split(":"))>1 else "kjspkg" # kjspkg: - default prefix
+    packagename = _remove_prefix(pkg) # Get package name without the prefix
+
+    # Call correct function based on prefix
+    if prefix=="kjspkg": info = _kjspkginfo(packagename)
+    elif prefix in ("carbon", "carbonjs"): info = _carbonpkginfo(packagename)
+    else: _err("Unknown prefix: "+_bold(prefix))
+
+    if getlicense: # If the license is requested
+        pkglicense = get(f"https://api.github.com/repos/{info['repo']}/license?ref={info['branch']}") # Get license
+        if pkglicense.status_code!=403: info["license"] = pkglicense.json()["license"]["spdx_id"] if pkglicense.status_code!=404 else "All Rights Reserved" # Add the license to info
+        if ("license" not in info.keys() or info["license"]=="NOASSERTION"): info["license"] = f"Other ({pkglicense.json()['html_url'] if pkglicense.status_code!=403 else 'https://github.com/Modern-Modpacks/kjspkg/blob/'+info['branch']+'/LICENSE'})" # Custom licenses or api rate exceeded
+
+    return info
+def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
     pkgregistry = _pkgs_json() # Get the pkgs.json file
     if pkg not in pkgregistry.keys(): return # Return nothing if the pkg doesn't exist
 
@@ -87,12 +103,25 @@ def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     package["repo"] = repo # Add the repo to info
     package["branch"] = branch # Add the branch to info
 
-    if getlicense: # If the license is requested
-        pkglicense = get(f"https://api.github.com/repos/{repo}/license?ref={branch}") # Get license
-        if pkglicense.status_code!=403: package["license"] = pkglicense.json()["license"]["spdx_id"] if pkglicense.status_code!=404 else "All Rights Reserved" # Add the license to info
-        if ("license" not in package.keys() or package["license"]=="NOASSERTION"): package["license"] = f"Other ({pkglicense.json()['html_url'] if pkglicense.status_code!=403 else 'https://github.com/Modern-Modpacks/kjspkg/blob/'+branch+'/LICENSE'})" # Custom licenses or api rate exceeded
-
     return package # Return the json object
+def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg
+    request = get(f"https://raw.githubusercontent.com/carbon-kjs/{pkg}/main/carbon.config.json") # Request info about the package
+    if request.status_code==404: return # Return nothing if the pkg doesn't exist
+
+    json = request.json() # Get info in json
+
+    return { # Return formatted info
+        "author": json["author"],
+        "description": json["description"],
+        
+        "versions": [VERSIONS[json["minecraftVersion"]]],
+        "modloaders": json["modloaders"],
+        "dependencies": [],
+        "incompatibilities": [],
+
+        "repo": f"carbon-kjs/{pkg}",
+        "branch": "main"
+    }
 def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
     if not update and pkg in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
@@ -103,6 +132,7 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
         _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
 
     package = _pkg_info(pkg) # Get pkg
+    pkg = _remove_prefix(pkg) # Remove pkg prefix
     if not package: # If pkg doesn't exist
         if not skipmissing: _err(f"Package \"{pkg}\" does not exist") # Err
         else: return # Or just ingore
@@ -165,10 +195,10 @@ def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=Fal
     for pkg in pkgs:
         pkg = pkg.lower()
 
-        if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{pkg}\" not found")
+        if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{_remove_prefix(pkg)}\" not found")
         _install_pkg(pkg, update, skipmissing)
         if not quiet and pkg=="*": print(_bold(f"All packages updated succesfully!"))
-        elif not quiet: print(_bold(f"Package \"{pkg}\" {'installed' if not update else 'updated'} succesfully!"))
+        elif not quiet: print(_bold(f"Package \"{_remove_prefix(pkg)}\" {'installed' if not update else 'updated'} succesfully!"))
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
     for pkg in pkgs:
         pkg = pkg.lower()
@@ -199,7 +229,7 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 
     # Print it (pretty)
     print(f"""
-{_bold(pkg.replace("-", " ").title())} by {_bold(info["author"])}
+{_bold(_remove_prefix(pkg).replace("-", " ").title())} by {_bold(info["author"])}
 
 {info["description"]}
 
@@ -274,6 +304,10 @@ kjspkg remove/uninstall [pkgname1] [pkgname2] [--quiet/--skipmissing] - removes 
 kjspkg update [pkgname1/*] [pkgname2] [--quiet/--skipmissing] - updates packages
 kjspkg updateall [--quiet/--skipmissing] - updates all packages
 
+kjspkg install [pkgname] - installs packages from kjspkg's repo
+kjspkg install kjspkg:[pkgname] - installs packages from kjspkg's repo
+kjspkg install carbon:[pkgname] - installs packages from carbonjs' repo (https://github.com/carbon-kjs)
+
 kjspkg list [--count] - lists packages (or outputs the count of them)
 kjspkg pkg [package] [--script] - shows info about the package
 kjspkg listall/all [--count] [--search "<query>"] - lists all packages
@@ -309,6 +343,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         "download": install,
         "remove": removepkg,
         "uninstall": removepkg,
+        "rm": removepkg,
         "update": update,
         "updateall": updateall,
         "list": listpkgs,

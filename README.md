@@ -33,6 +33,8 @@ Installing packages:
 
 ```sh
 kjspkg install [package] [package]
+kjspkg install kjspkg:[package]
+kjspkg install carbon:[package] # CarbonJS compatibility (https://github.com/carbon-kjs)
 ```
 
 Removing packages:
