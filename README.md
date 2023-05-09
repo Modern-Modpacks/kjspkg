@@ -2,7 +2,8 @@
 
 A simple package manager for KubeJS.
 
-![badge](https://img.shields.io/badge/contributions-welcome-c374e4?style=for-the-badge&labelColor=480066&logo=hackthebox&logoColor=white)
+[![contributions](https://img.shields.io/badge/contributions-welcome-c374e4?style=for-the-badge&labelColor=480066&logo=hackthebox&logoColor=white)](https://github.com/Modern-Modpacks/kjspkg#adding-your-own-package)
+[![lat](https://img.shields.io/badge/approved%20by-lat-c374e4?style=for-the-badge&labelColor=480066)](https://media.discordapp.net/attachments/764838645374648353/1105578193181753465/image.png?width=545&height=657)
 
 ![logo](https://user-images.githubusercontent.com/79367505/227798123-5454e9b1-b39b-4c45-9e02-e18f2e807585.png)
 
