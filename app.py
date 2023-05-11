@@ -177,7 +177,7 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
 
     tmpdir = _create_tmp(pkg) # Create a temp dir
     try: Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir, branch=package["branch"]) # Install the repo into the tmp dir
-    except GitCommandError: tryRepo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir) # If the branch is not found, try to install from the default one
+    except GitCommandError: Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir) # If the branch is not found, try to install from the default one
 
     pkg = _format_github(pkg) # Remove github author and branch if present
 
