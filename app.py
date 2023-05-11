@@ -88,7 +88,7 @@ def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     # Call correct function based on prefix
     if prefix=="kjspkg": info = _kjspkginfo(packagename)
     elif prefix in ("carbon", "carbonjs"): info = _carbonpkginfo(packagename)
-    elif prefix=="github": info = _githubpkginfo(packagename)
+    elif prefix in ("github", "external"): info = _githubpkginfo(packagename)
     else: _err("Unknown prefix: "+_bold(prefix))
 
     if getlicense: # If the license is requested
@@ -354,6 +354,7 @@ kjspkg updateall [--quiet/--skipmissing] - updates all packages
 kjspkg install [pkgname] - installs packages from kjspkg's repo
 kjspkg install kjspkg:[pkgname] - installs packages from kjspkg's repo
 kjspkg install carbon:[pkgname] - installs packages from carbonjs' repo (https://github.com/carbon-kjs)
+kjspkg install github:[author]/[name] - installs external packages from github
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
 kjspkg pkg [package] [--script] - shows info about the package
