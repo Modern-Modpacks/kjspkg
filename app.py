@@ -15,7 +15,7 @@ from warnings import filterwarnings # Disable the dumb fuzz warning
 from fire import Fire # CLI tool
 
 from requests import get, exceptions # Requests
-from git import Repo, GitCommandNotFound # Git cloning
+from git import Repo, GitCommandNotFound, GitCommandError # Git cloning
 
 # CONSTANTS
 VERSIONS = { # Version and version keys
@@ -176,7 +176,8 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
             if i in package["incompatibilities"]: _err(f"Incompatible package: "+i) # Throw err if incompats detected
 
     tmpdir = _create_tmp(pkg) # Create a temp dir
-    Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir, branch=package["branch"]) # Install the repo into the tmp dir
+    try: Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir, branch=package["branch"]) # Install the repo into the tmp dir
+    except GitCommandError: tryRepo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir) # If the branch is not found, try to install from the default one
 
     pkg = _format_github(pkg) # Remove github author and branch if present
 
