@@ -81,7 +81,9 @@ def _pkgs_json() -> dict: # Get the pkgs.json file
     if not path.exists(pkgspath): _reload_pkgs()
     return load(open(pkgspath))
 
-def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
+def _pkg_info(pkg:str, getlicense:bool=False, refresh:bool=True) -> dict: # Get info about the pkg
+    if refresh: _reload_pkgs() # Refresh pkgs
+
     prefix = pkg.split(":")[0] if len(pkg.split(":"))>1 else "kjspkg" # kjspkg: - default prefix
     packagename = _remove_prefix(pkg) # Get package name without the prefix
 
@@ -91,7 +93,7 @@ def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     elif prefix in ("github", "external"): info = _githubpkginfo(packagename)
     else: _err("Unknown prefix: "+_bold(prefix))
 
-    if getlicense: # If the license is requested
+    if info and getlicense: # If the license is requested
         pkglicense = get(f"https://api.github.com/repos/{info['repo']}/license?ref={info['branch']}") # Get license
         if pkglicense.status_code!=403: info["license"] = pkglicense.json()["license"]["spdx_id"] if pkglicense.status_code!=404 else "All Rights Reserved" # Add the license to info
         if ("license" not in info.keys() or info["license"]=="NOASSERTION"): info["license"] = f"Other ({pkglicense.json()['html_url'] if pkglicense.status_code!=403 else 'https://github.com/Modern-Modpacks/kjspkg/blob/'+info['branch']+'/LICENSE'})" # Custom licenses or api rate exceeded
@@ -430,7 +432,7 @@ if __name__=="__main__": # If not imported
 
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
-    except TypeError: _err("Wrong syntax") # Wrong syntax err
+    # except TypeError: _err("Wrong syntax") # Wrong syntax err
     except GitCommandNotFound: _err("Git not found. Install it here: https://git-scm.com/downloads") # Git not found err
     except (exceptions.ConnectionError, exceptions.ReadTimeout): _err("Low internet connection") # Low internet connection err
 
