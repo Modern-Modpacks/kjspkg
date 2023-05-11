@@ -44,7 +44,8 @@ def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
 def _err(err:str): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     exit(1) # Quit
-def _remove_prefix(pkgname:str) -> str: return pkgname.split(":")[-1]
+def _remove_prefix(pkgname:str) -> str: return pkgname.split(":")[-1] # Remove prefix
+def _format_github(pkgname:str) -> str: return _remove_prefix(pkgname).split('/')[-1].split("@")[0] # Remove github author and branch
 def _dumbass_windows_path_error(f, p:str, e): chmod(p, S_IWRITE) # Dumbass windows path error
 
 # TMP HELPER FUNCTIONS
@@ -79,6 +80,7 @@ def _pkgs_json() -> dict: # Get the pkgs.json file
     pkgspath = path.join(gettempdir(), "kjspkgs.json")
     if not path.exists(pkgspath): _reload_pkgs()
     return load(open(pkgspath))
+
 def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     prefix = pkg.split(":")[0] if len(pkg.split(":"))>1 else "kjspkg" # kjspkg: - default prefix
     packagename = _remove_prefix(pkg) # Get package name without the prefix
@@ -86,6 +88,7 @@ def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     # Call correct function based on prefix
     if prefix=="kjspkg": info = _kjspkginfo(packagename)
     elif prefix in ("carbon", "carbonjs"): info = _carbonpkginfo(packagename)
+    elif prefix=="github": info = _githubpkginfo(packagename)
     else: _err("Unknown prefix: "+_bold(prefix))
 
     if getlicense: # If the license is requested
@@ -128,8 +131,21 @@ def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg (https://gi
         "repo": f"carbon-kjs/{pkg}",
         "branch": "main"
     }
+def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
+    return {
+        "author": pkg.split("/")[0],
+        "description": "",
+        
+        "versions": [kjspkgfile["version"]],
+        "modloaders": [kjspkgfile["modloader"]],
+        "dependencies": [],
+        "incompatibilities": [],
+
+        "repo": pkg,
+        "branch": "main" if "@" not in pkg else pkg.split("@")[-1]
+    }
 def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Install the pkg
-    if not update and pkg in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
+    if not update and _format_github(pkg) in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
         if pkg=="*": # If updating all packages
             for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, skipmissing) # Update all packages
@@ -142,10 +158,11 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
         _reload_pkgs() # Reload if not found
         package = _pkg_info(pkg) # Try to get the pkg again
 
-    pkg = _remove_prefix(pkg) # Remove pkg prefix
-    if not package: # If pkg doesn't exist
+    if not package: # If pkg doesn't exist after reload
         if not skipmissing: _err(f"Package \"{pkg}\" does not exist") # Err
         else: return # Or just ingore
+
+    pkg = _remove_prefix(pkg) # Remove pkg prefix
 
     # Unsupported version/modloader errs
     if kjspkgfile["version"] not in package["versions"]: _err(f"Unsupported version 1.{10+kjspkgfile['version']} for package \"{pkg}\"")
@@ -160,6 +177,8 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
 
     tmpdir = _create_tmp(pkg) # Create a temp dir
     Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir, branch=package["branch"]) # Install the repo into the tmp dir
+
+    pkg = _format_github(pkg) # Remove github author and branch if present
 
     licensefile = path.join(tmpdir, "LICENSE") 
     if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.txt")
@@ -200,15 +219,27 @@ def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
 
 # COMMAND FUNCTIONS
 def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=False, reload:bool=True): # Install pkgs
-    if update and not pkgs: pkgs = ("*",)
+    if update and not pkgs: pkgs = ("*",) # If update is passed and not pkgs are, set them to all pkgs
 
+    # Install each given package
     for pkg in pkgs:
-        pkg = pkg.lower()
+        pkg = pkg.lower() # Format
 
-        if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{_remove_prefix(pkg)}\" not found")
-        _install_pkg(pkg, update, skipmissing, reload)
-        if not quiet and pkg=="*": print(_bold(f"All packages updated succesfully!"))
-        elif not quiet: print(_bold(f"Package \"{_remove_prefix(pkg)}\" {'installed' if not update else 'updated'} succesfully!"))
+        if (
+            pkg.startswith("github:") and ( # If the package is external
+                ("trustgithub" in kjspkgfile.keys() and kjspkgfile["trustgithub"]) or # And external packages are trusted
+                (quiet or input(_bold(f"Package \"{_format_github(pkg)}\" uses the \"github:\" prefix, external packages coming from github are not tested and are not guaranteed to work, do you want to disable external packages in this project? (Y/n) ")).lower()!="n") # Or quiet mode is set/prompt is answered with y
+            )
+        ): kjspkgfile["trustgithub"]=True # Trust external packages
+        else: # Otherwise
+            kjspkgfile["trustgithub"]=False # Don't trust them
+            if skipmissing: continue # Skip if skipmissing
+            else: return # Stop if no skipmissing
+
+        if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{_format_github(pkg)}\" not found") # Err if package not found during update
+        _install_pkg(pkg, update, skipmissing, reload) # Install package
+        if not quiet and pkg=="*": print(_bold(f"All packages updated succesfully!")) # Show message if all packages are updated
+        elif not quiet: print(_bold(f"Package \"{_format_github(pkg)}\" {'installed' if not update else 'updated'} succesfully!")) # Show message if one package is installed/updated
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
     for pkg in pkgs:
         pkg = pkg.lower()
@@ -229,6 +260,8 @@ def listpkgs(*, count:bool=False): # List pkgs
 
     print("\n".join(kjspkgfile["installed"].keys())) # Print the list
 def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
+    if(pkg.startswith("github:")): _err(f"Can't show info about an external package \"{_format_github(pkg)}\"") # Err if pkg is external
+
     info = _pkg_info(pkg, True) # Get the info
     if not info: _err(f"Package {pkg} not found") # Err if pkg not found
 
@@ -273,7 +306,7 @@ def listall(*, count:bool=False, search:str="", reload:bool=True): # List all pk
 def search(*query:str, **kwags): # Search for pkgs
     listall(search="-".join(query), **kwags) # Call listall with joined spaces
 def reload(): _reload_pkgs() # Reload packages
-def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:bool=False, cancreate:str=None): # Init project
+def init(*, version:str=None, modloader:str=None, trustgithub:bool=False, quiet:bool=False, override:bool=False, cancreate:str=None): # Init project
     global kjspkgfile
 
     if cancreate: # Scriptable cancreate option
@@ -301,7 +334,8 @@ def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:boo
     kjspkgfile = {
         "version": version,
         "modloader": modloader if modloader!="quilt" else "fabric",
-        "installed": {}
+        "installed": {},
+        "trustgithub": trustgithub
     }
     with open(".kjspkg", "w+") as f: dump(kjspkgfile, f) # Create .kjspkg file
     if not quiet: print(_bold("Project created!")) # Woo!
