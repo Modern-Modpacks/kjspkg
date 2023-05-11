@@ -6,6 +6,7 @@
 from os import path, remove, getcwd, makedirs, walk, chmod, system, environ # Working with files
 from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
+from tempfile import gettempdir # Get tmp dir of current os
 from json import dump, load, dumps # Json
 from stat import S_IWRITE # Windows stuff
 from warnings import filterwarnings # Disable the dumb fuzz warning
@@ -13,7 +14,7 @@ from warnings import filterwarnings # Disable the dumb fuzz warning
 # External libraries
 from fire import Fire # CLI tool
 
-from requests import get # Requests
+from requests import get, exceptions # Requests
 from git import Repo, GitCommandNotFound # Git cloning
 
 # CONSTANTS
@@ -72,7 +73,12 @@ def _enable_reflection(): # Enable reflection on 1.16
         if ("invertClassLoader=true" not in f.read().splitlines()): f.write("invertClassLoader=true")
 
 # PKG HELPER FUNCTIONS
-def _pkgs_json() -> dict: return get(f"https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json").json() # Get the pkgs.json file
+def _reload_pkgs(): # Reload package registry cache
+    with open(path.join(gettempdir(), "kjspkgs.json"), "w") as tmp: tmp.write(get(f"https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json").text)
+def _pkgs_json() -> dict: # Get the pkgs.json file
+    pkgspath = path.join(gettempdir(), "kjspkgs.json")
+    if not path.exists(pkgspath): _reload_pkgs()
+    return load(open(pkgspath))
 def _pkg_info(pkg:str, getlicense:bool=False) -> dict: # Get info about the pkg
     prefix = pkg.split(":")[0] if len(pkg.split(":"))>1 else "kjspkg" # kjspkg: - default prefix
     packagename = _remove_prefix(pkg) # Get package name without the prefix
@@ -104,7 +110,7 @@ def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
     package["branch"] = branch # Add the branch to info
 
     return package # Return the json object
-def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg
+def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg (https://github.com/carbon-kjs)
     request = get(f"https://raw.githubusercontent.com/carbon-kjs/{pkg}/main/carbon.config.json") # Request info about the package
     if request.status_code==404: return # Return nothing if the pkg doesn't exist
 
@@ -122,7 +128,7 @@ def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg
         "repo": f"carbon-kjs/{pkg}",
         "branch": "main"
     }
-def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
+def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Install the pkg
     if not update and pkg in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
         if pkg=="*": # If updating all packages
@@ -132,6 +138,10 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool): # Install the pkg
         _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
 
     package = _pkg_info(pkg) # Get pkg
+    if not package and reload: 
+        _reload_pkgs() # Reload if not found
+        package = _pkg_info(pkg) # Try to get the pkg again
+
     pkg = _remove_prefix(pkg) # Remove pkg prefix
     if not package: # If pkg doesn't exist
         if not skipmissing: _err(f"Package \"{pkg}\" does not exist") # Err
@@ -189,14 +199,14 @@ def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
     del kjspkgfile["installed"][pkg] # Remove the pkg from installed
 
 # COMMAND FUNCTIONS
-def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=False): # Install pkgs
+def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=False, reload:bool=True): # Install pkgs
     if update and not pkgs: pkgs = ("*",)
 
     for pkg in pkgs:
         pkg = pkg.lower()
 
         if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{_remove_prefix(pkg)}\" not found")
-        _install_pkg(pkg, update, skipmissing)
+        _install_pkg(pkg, update, skipmissing, reload)
         if not quiet and pkg=="*": print(_bold(f"All packages updated succesfully!"))
         elif not quiet: print(_bold(f"Package \"{_remove_prefix(pkg)}\" {'installed' if not update else 'updated'} succesfully!"))
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
@@ -242,7 +252,8 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
 {_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
     """)
-def listall(*, count:bool=False, search:str=""): # List all pkgs
+def listall(*, count:bool=False, search:str="", reload:bool=True): # List all pkgs
+    if reload: _reload_pkgs() # Reload pkgs
     allpkgs = list(_pkgs_json().keys()) # All package names
 
     if count: # If count is true
@@ -259,8 +270,9 @@ def listall(*, count:bool=False, search:str=""): # List all pkgs
     results = process.extract(search, allpkgs)
     for result, ratio in results:
         if ratio>75: print(result)
-def search(*query:str): # Search for pkgs
-    listall(search="-".join(query)) # Call listall with joined spaces
+def search(*query:str, **kwags): # Search for pkgs
+    listall(search="-".join(query), **kwags) # Call listall with joined spaces
+def reload(): _reload_pkgs() # Reload packages
 def init(*, version:str=None, modloader:str=None, quiet:bool=False, override:bool=False, cancreate:str=None): # Init project
     global kjspkgfile
 
@@ -299,7 +311,7 @@ def info(): # Print the help page
     INFO = f"""
 {_bold("Commands:")}
 
-kjspkg install/download [pkgname1] [pkgname2] [--quiet/--skipmissing] [--update] - installs packages
+kjspkg install/download [pkgname1] [pkgname2] [--quiet/--skipmissing] [--update] [--noreload] - installs packages
 kjspkg remove/uninstall [pkgname1] [pkgname2] [--quiet/--skipmissing] - removes packages
 kjspkg update [pkgname1/*] [pkgname2] [--quiet/--skipmissing] - updates packages
 kjspkg updateall [--quiet/--skipmissing] - updates all packages
@@ -310,19 +322,21 @@ kjspkg install carbon:[pkgname] - installs packages from carbonjs' repo (https:/
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
 kjspkg pkg [package] [--script] - shows info about the package
-kjspkg listall/all [--count] [--search "<query>"] - lists all packages
+kjspkg listall/all [--count] [--search "<query>"] [--noreload] - lists all packages
 kjspkg search [query] - searches for packages with a similar name
+kjspkg reload/refresh - reloads the cached package registry
 
 kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloader>"] [--cancreate "<path>"] - inits a new project (will be run by default)
 kjspkg uninit [--confirm] - removes all packages and the project
 
-kjspkg help/info - shows this message
+kjspkg help/info - shows this message (default behavior)
 kjspkg gui - shows info about the GUI app
 
 {_bold("Credits:")}
 
 Modern Modpacks - owner
 G_cat101 - coder
+malezjaa - creator of CarbonJS
 Juh9870 - Wanted to be here
     """
 
@@ -351,6 +365,8 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         "listall": listall,
         "all": listall,
         "search": search,
+        "reload": reload,
+        "refresh": reload,
         "init": init,
         "uninit": uninit,
         "help": info,
@@ -380,6 +396,7 @@ if __name__=="__main__": # If not imported
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
     except TypeError: _err("Wrong syntax") # Wrong syntax err
     except GitCommandNotFound: _err("Git not found. Install it here: https://git-scm.com/downloads") # Git not found err
+    except (exceptions.ConnectionError, exceptions.ReadTimeout): _err("Low internet connection") # Low internet connection err
 
     _clear_tmp() # Remove tmp again
 
