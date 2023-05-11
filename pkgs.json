@@ -7,11 +7,13 @@
 
     "tic-deco-fix": "gcatkjspkgs/tcondecofix",
     "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
-    "create-manual": "gcatkjspkgs/create-manual",
     "entity-snip-snip": "gcatkjspkgs/entity-snip-snip",
 
     "soljs": "gcatkjspkgs/SoLJS",
     "pongjs": "gcatkjspkgs/PongJS",
+
+    "create-manual": "gcatkjspkgs/create-manual",
+    "torch-by-pickaxe": "gcatkjspkgs/torch-by-pickaxe",
 
     "entropy-manipulator-create-depot": "gcatkjspkgs/entropy-manipulator-create-depot",
     "hardcore-air-supply": "gcatkjspkgs/hardcore-air-supply",
