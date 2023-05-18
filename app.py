@@ -431,7 +431,7 @@ def info(): # Print the help page
 kjspkg install/download [pkgname1] [pkgname2] [--quiet/--skipmissing] [--update] [--noreload] - installs packages
 kjspkg remove/uninstall [pkgname1] [pkgname2] [--quiet/--skipmissing] - removes packages
 kjspkg update [pkgname1/*] [pkgname2] [--quiet/--skipmissing] - updates packages
-kjspkg updateall [--quiet/--skipmissing] - updates all packages
+kjspkg updateall [--quiet/--skipmissing] [--carbon] - updates all packages
 
 kjspkg install [pkgname] - installs packages from kjspkg's repo
 kjspkg install kjspkg:[pkgname] - installs packages from kjspkg's repo
