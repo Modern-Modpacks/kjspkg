@@ -42,6 +42,8 @@ VERSIONS = { # Version and version keys
 SCRIPT_DIRS = ("server_scripts", "client_scripts", "startup_scripts") # Script directories
 ASSET_DIRS = ("data", "assets") # Asset directories
 CONFIG = { # Default config
+    "_": "Please, do not delete this file or any other file/directory labeled \".kjspkg\", even if they might seem empty and useless, they are still required. Thanks for your understanding!",
+
     "installed": {},
     "trustgithub": False
 }
@@ -338,9 +340,11 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
 {_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
     """)
-def listall(*, count:bool=False, search:str="", reload:bool=True): # List all pkgs
-    if reload: _reload_pkgs() # Reload pkgs
-    allpkgs = list(_pkgs_json().keys()) # All package names
+def listall(*, count:bool=False, search:str="", reload:bool=True, carbon:bool=False): # List all pkgs
+    if not carbon:
+        if reload: _reload_pkgs() # Reload pkgs
+        allpkgs = list(_pkgs_json().keys()) # All package names
+    else: allpkgs = [i["name"] for i in get("https://api.github.com/orgs/carbon-kjs/repos").json()]
 
     if count: # If count is true
         print(len(allpkgs)) # Print the pkg count
@@ -409,7 +413,12 @@ def info(): # Print the help page
         "Made in Python 3.whatever!",
         "Also try CarbonJS!",
         "https://modernmodpacks.site",
-        "Made by Modern Modpacks!"
+        "Made by Modern Modpacks!",
+        "gimme gimme gimme",
+        "`amogus` is a real package!",
+        "Supports 1.12!",
+        "Procrastinating doing one project by doing another project, genius!",
+        "Also try Magna!"
     ]
 
     # Info string
@@ -516,7 +525,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
     
-    helperfuncs = (info, guiinfo, init, pkginfo, listall, search) # Helper commands that don't require a project
+    helperfuncs = (info, guiinfo, init, pkginfo, listall, search, kombucha) # Helper commands that don't require a project
     if FUNCTIONS[func] not in helperfuncs and not _project_exists(): # If a project is not found, call init
         print(_bold("Project not found, a new one will be created.\n"))
         init()
