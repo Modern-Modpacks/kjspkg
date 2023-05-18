@@ -8,14 +8,19 @@ from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from tempfile import gettempdir # Get tmp dir of current os
 from json import dump, load, dumps # Json
+
+from http import server # Discord login stuff
+from urllib.parse import urlparse, parse_qs # Parse url path
+
 from stat import S_IWRITE # Windows stuff
 from warnings import filterwarnings # Disable the dumb fuzz warning
+
 from random import choice # Random splash
 
 # External libraries
 from fire import Fire # CLI tool
 
-from requests import get, exceptions # Requests
+from requests import get, post, exceptions # Requests
 from git import Repo, GitCommandNotFound, GitCommandError # Git cloning
 
 # CONSTANTS
@@ -43,6 +48,35 @@ CONFIG = { # Default config
 
 # VARIABLES
 kjspkgfile = {} # .kjspkg file
+
+# CLASSES
+# class HTTPDiscordLoginRequestHandler(server.BaseHTTPRequestHandler):
+#     def log_message(self, format, *args): return
+#     def do_GET(self):
+#         self.send_response(200)
+#         self.send_header("Content-type", "text/html")
+#         self.end_headers()
+#         self.wfile.write(
+# b"""<html>
+#     <head>
+#         <script>
+#             close();
+#         </script>
+#     </head>
+# </html>"""
+#         )
+
+#         token = post("https://discord.com/api/v10/oauth2/token", data={
+#             "client_id": "1108295881247166496",
+#             "client_secret": "yopSwUCpisfib6RR3aqHyp293vOyG4F5",
+#             "grant_type": "authorization_code",
+#             "code": parse_qs(urlparse(self.path).query)["code"][0],
+#             "redirect_uri": "http://localhost:1337"
+#         }).json()["access_token"]
+
+#         print(post("https://discord.com/api/v10/channels/303440391124942858/messages", headers={
+#             "Authorization": token
+#         }).text)
 
 # HELPER FUNCTIONS
 def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
@@ -74,15 +108,17 @@ def _delete_project(): # Delete the project and all of the files
     for pkg in list(kjspkgfile["installed"].keys()): _remove_pkg(pkg, True) # Remove all packages
     for dir in SCRIPT_DIRS: rmtree(path.join(dir, ".kjspkg"), onerror=_dumbass_windows_path_error) # Remove .kjspkg dirs
     remove(".kjspkg") # Remove .kjspkg file
-def _enable_reflection(): # Enable reflection on 1.16
-    with open(path.join("config", "common.properties"), "a+") as f:
-        if ("invertClassLoader=true" not in f.read().splitlines()): f.write("invertClassLoader=true")
 def _update_manifest(): # Update .kjspkg file
     global kjspkgfile
 
     # Update the config by adding keys that don't exist
     for k, v in CONFIG.items():
         if k not in kjspkgfile.keys(): kjspkgfile[k] = v
+def _enable_reflection(): # Enable reflection on 1.16
+    with open(path.join("config", "common.properties"), "a+") as f:
+        if ("invertClassLoader=true" not in f.read().splitlines()): f.write("invertClassLoader=true")
+# def _discord_login(): # Login with discord for discord prefixes
+#     server.HTTPServer(("", 1337), HTTPDiscordLoginRequestHandler).handle_request()
 
 # PKG HELPER FUNCTIONS
 def _reload_pkgs(): # Reload package registry cache
@@ -102,6 +138,9 @@ def _pkg_info(pkg:str, getlicense:bool=False, refresh:bool=True) -> dict: # Get 
     if prefix=="kjspkg": info = _kjspkginfo(packagename)
     elif prefix in ("carbon", "carbonjs"): info = _carbonpkginfo(packagename)
     elif prefix in ("github", "external"): info = _githubpkginfo(packagename)
+    # elif prefix=="discord": 
+    #     _discord_login()
+    #     exit()
     else: _err("Unknown prefix: "+_bold(prefix))
 
     if info and getlicense: # If the license is requested
@@ -413,7 +452,37 @@ Juh9870 - Wanted to be here
     print(INFO)
 def guiinfo(): # Print info about the GUI app
     print(f"{_bold('Did you know there is a GUI app for KJSPKG?')} Check it out at https://github.com/Modern-Modpacks/kjspkg-gui!")
-    
+def kombucha(): # Kombucha easter egg
+    RECIPE = f"""
+{_bold("Ingredients")}
+
+* 2 organic green teabags (or 2 tsp loose leaf)
+* 2 organic black teabags bags (or 2 tsp loose leaf)
+* 100-200g granulated sugar, to taste
+* 1 medium scoby, plus 100-200ml starter liquid
+
+{_bold("Method")}
+
+STEP 1
+For essential information on brewing safely, our top recipe tips and fun flavours to try, read our guide on how to make kombucha. Pour 1.8 litres boiled water into a saucepan, add the teabags and sugar (depending on how sweet you like it or the bitterness of your tea), stir to dissolve the sugar and leave for 6-10 mins to infuse.
+
+STEP 2
+Remove and discard the teabags without squeezing them. Leave the tea to cool completely before pouring into a large 2.5- to 3-litre glass jar. Add the scoby and its starter liquid, leaving a minimum of 5cm space at the top of the jar.
+
+STEP 3
+Cover the jar with a thin tea towel or muslin cloth so the scoby can 'breathe'. Secure with an elastic band and label the jar with the date and its contents.
+
+STEP 4
+Leave to ferment for one to two weeks at room temperature and away from radiators, the oven or direct sunlight. Do not put the jar in a cupboard, as air circulation is important.
+
+STEP 5
+After the first week, taste the kombucha daily – the longer you leave it, the more acidic the flavour will become. When ready, pour the kombucha into bottles, making sure to reserve the scoby and 100-200ml of starter fluid for the next batch.
+
+STEP 6
+The kombucha is ready to drink immediately, or you can start a ‘secondary fermentation’ by adding flavours such as fruit, herbs and spices to the drawn-off liquid and leaving it bottled for a few more days before drinking. Will keep in the fridge for up to three months.
+    """
+    print(RECIPE)
+ 
 # PARSER FUNCTION
 def _parser(func:str="help", *args, help:bool=False, **kwargs):
     global kjspkgfile
@@ -441,7 +510,8 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         "uninit": uninit,
         "help": info,
         "info": info,
-        "gui": guiinfo
+        "gui": guiinfo,
+        "mold": kombucha
     }
 
     if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
