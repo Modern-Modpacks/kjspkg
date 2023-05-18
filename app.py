@@ -10,6 +10,7 @@ from tempfile import gettempdir # Get tmp dir of current os
 from json import dump, load, dumps # Json
 from stat import S_IWRITE # Windows stuff
 from warnings import filterwarnings # Disable the dumb fuzz warning
+from random import choice # Random splash
 
 # External libraries
 from fire import Fire # CLI tool
@@ -35,6 +36,10 @@ VERSIONS = { # Version and version keys
 }
 SCRIPT_DIRS = ("server_scripts", "client_scripts", "startup_scripts") # Script directories
 ASSET_DIRS = ("data", "assets") # Asset directories
+CONFIG = { # Default config
+    "installed": {},
+    "trustgithub": False
+}
 
 # VARIABLES
 kjspkgfile = {} # .kjspkg file
@@ -72,6 +77,12 @@ def _delete_project(): # Delete the project and all of the files
 def _enable_reflection(): # Enable reflection on 1.16
     with open(path.join("config", "common.properties"), "a+") as f:
         if ("invertClassLoader=true" not in f.read().splitlines()): f.write("invertClassLoader=true")
+def _update_manifest(): # Update .kjspkg file
+    global kjspkgfile
+
+    # Update the config by adding keys that don't exist
+    for k, v in CONFIG.items():
+        if k not in kjspkgfile.keys(): kjspkgfile[k] = v
 
 # PKG HELPER FUNCTIONS
 def _reload_pkgs(): # Reload package registry cache
@@ -309,8 +320,16 @@ def listall(*, count:bool=False, search:str="", reload:bool=True): # List all pk
 def search(*query:str, **kwags): # Search for pkgs
     listall(search="-".join(query), **kwags) # Call listall with joined spaces
 def reload(): _reload_pkgs() # Reload packages
-def init(*, version:str=None, modloader:str=None, trustgithub:bool=False, quiet:bool=False, override:bool=False, cancreate:str=None): # Init project
+def init(*, quiet:bool=False, override:bool=False, cancreate:str=None, **configargs): # Init project
     global kjspkgfile
+
+    params = [ # Changable parameters
+        "version",
+        "modloader",
+        "trustgithub"
+    ]
+    for arg in configargs.keys(): # If a parameter is not found, raise key err
+        if arg not in params: raise TypeError()
 
     if cancreate: # Scriptable cancreate option
         print(_check_project())
@@ -318,34 +337,47 @@ def init(*, version:str=None, modloader:str=None, trustgithub:bool=False, quiet:
 
     if not _check_project(): _err("Hmm... This directory doesn't look like a kubejs directory") # Wrong dir err
 
-    if _project_exists(): # Override
+    if _project_exists() and not override: # Override
         if not quiet and input("\u001b[31;1mA PROJECT ALREADY EXISTS IN THIS REPOSITORY, CREATING A NEW ONE OVERRIDES THE PREVIOUS ONE, ARE YOU SURE YOU WANT TO PROCEED? (y/N): \u001b[0m").lower()=="y" or override: _delete_project()
         else: exit(0)
 
     # Ask for missing params
-    if not version: version = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19): ")) # Version
-    if version not in VERSIONS.keys(): _err("Unknown or unsupported version: "+str(version))
-    version = VERSIONS[version]
+    if "version" not in configargs.keys(): configargs["version"] = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19): ")) # Version
+    if configargs["version"] not in VERSIONS.keys(): _err("Unknown or unsupported version: "+str(configargs["version"]))
+    configargs["version"] = VERSIONS[configargs["version"]]
 
-    if not modloader: modloader = input(_bold("Input your modloader (forge/fabric/quilt): ")) # Modloader
-    modloader = modloader.lower()
-    if modloader not in ("forge", "fabric", "quilt"): _err("Unknown or unsupported modloader: "+modloader.title())
+    if "modloader" not in configargs.keys(): configargs["modloader"] = input(_bold("Input your modloader (forge/fabric/quilt): ")) # Modloader
+    configargs["modloader"] = configargs["modloader"].lower()
+    if configargs["modloader"] not in ("forge", "fabric", "quilt"): _err("Unknown or unsupported modloader: "+configargs["modloader"].title())
 
     _create_project_directories() # Create .kjspkg directories
-    if version==6: _enable_reflection() # Enable reflection in the config for 1.16.5
+    if configargs["version"]==6: _enable_reflection() # Enable reflection in the config for 1.16.5
 
-    kjspkgfile = {
-        "version": version,
-        "modloader": modloader if modloader!="quilt" else "fabric",
-        "installed": {},
-        "trustgithub": trustgithub
-    }
+    kjspkgfile = CONFIG # Set .kjspkg to default config
+    for k, v in configargs.items(): kjspkgfile[k] = v # Change config as needed
+
     with open(".kjspkg", "w+") as f: dump(kjspkgfile, f) # Create .kjspkg file
     if not quiet: print(_bold("Project created!")) # Woo!
 def uninit(*, confirm:bool=False): # Remove the project
     if confirm or input("\u001b[31;1mDOING THIS WILL REMOVE ALL PACKAGES AND UNINSTALL KJSPKG COMPLETELY, ARE YOU SURE YOU WANT TO PROCEED? (y/N): \u001b[0m").lower()=="y": _delete_project() 
 def info(): # Print the help page
+    SPLASHES = [ # Splash list
+        "You should run `kjspkg uninit`, NOW!",
+        "Run `kjspkg mold` to brew kombucha",
+        "Thanks Lat 👍",
+        "Help, I'm locked in a basement packaging scripts!",
+        "kjspkg rm -rf / --no-preserve-root",
+        "Made in Python 3.whatever!",
+        "Also try CarbonJS!",
+        "https://modernmodpacks.site",
+        "Made by Modern Modpacks!"
+    ]
+
+    # Info string
     INFO = f"""
+{_bold("KJSPKG")}, a package manager for KubeJS.
+{choice(SPLASHES)}
+
 {_bold("Commands:")}
 
 kjspkg install/download [pkgname1] [pkgname2] [--quiet/--skipmissing] [--update] [--noreload] - installs packages
@@ -424,6 +456,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     # Clean up
     if path.exists(".kjspkg") and FUNCTIONS[func] not in helperfuncs: # If uninit wasn't called and the command isn't a helper command
+        _update_manifest() # Update .kjspkg
         with open(".kjspkg", "w") as f: dump(kjspkgfile, f) # Save .kjspkg
 
 # RUN
@@ -432,7 +465,7 @@ if __name__=="__main__": # If not imported
 
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
-    # except TypeError: _err("Wrong syntax") # Wrong syntax err
+    except TypeError: _err("Wrong syntax") # Wrong syntax err
     except GitCommandNotFound: _err("Git not found. Install it here: https://git-scm.com/downloads") # Git not found err
     except (exceptions.ConnectionError, exceptions.ReadTimeout): _err("Low internet connection") # Low internet connection err
 
