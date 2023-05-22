@@ -452,9 +452,9 @@ kjspkg gui - shows info about the GUI app
 
 {_bold("Credits:")}
 
-Modern Modpacks - owner
-G_cat101 - coder
-malezjaa - creator of CarbonJS
+Modern Modpacks - Owner
+G_cat101 - Coder
+malezjaa - Creator of CarbonJS
 Juh9870 - Wanted to be here
     """
 
