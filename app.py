@@ -280,16 +280,15 @@ def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=Fal
     for pkg in pkgs:
         pkg = pkg.lower() # Format
 
-        if (
-            pkg.startswith("github:") and ( # If the package is external
+        if (pkg.startswith("github:")): # If the package is external
+            if (
                 ("trustgithub" in kjspkgfile.keys() and kjspkgfile["trustgithub"]) or # And external packages are trusted
                 (quiet or input(_bold(f"Package \"{_format_github(pkg)}\" uses the \"github:\" prefix, external packages coming from github are not tested and are not guaranteed to work, do you want to disable external packages in this project? (Y/n) ")).lower()!="n") # Or quiet mode is set/prompt is answered with y
-            )
-        ): kjspkgfile["trustgithub"]=True # Trust external packages
-        else: # Otherwise
-            kjspkgfile["trustgithub"]=False # Don't trust them
-            if skipmissing: continue # Skip if skipmissing
-            else: return # Stop if no skipmissing
+            ): kjspkgfile["trustgithub"]=True # Trust external packages
+            else: # Otherwise
+                kjspkgfile["trustgithub"]=False # Don't trust them
+                if skipmissing: continue # Skip if skipmissing
+                else: return # Stop if no skipmissing
 
         if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{_format_github(pkg)}\" not found") # Err if package not found during update
         _install_pkg(pkg, update, skipmissing, reload) # Install package
