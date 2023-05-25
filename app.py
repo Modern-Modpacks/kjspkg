@@ -224,7 +224,7 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
 
     # Install dependencies & check for incompats
     if "dependencies" in package.keys():
-        for dep in package["dependencies"]: _install_pkg(dep.lower(), False)
+        for dep in package["dependencies"]: _install_pkg(dep.lower(), False, skipmissing, noreload)
     if "incompatibilities" in package.keys(): 
         for i in kjspkgfile["installed"].keys(): 
             if i in package["incompatibilities"]: _err(f"Incompatible package: "+i) # Throw err if incompats detected
