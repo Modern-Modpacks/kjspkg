@@ -1,4 +1,6 @@
 {
+    "kjspkg-compat-layer": "gcatkjspkgs/kjspkg-compat-layer",
+
     "amogus": "gcatkjspkgs/kjspkg-test",
     "more-recipe-types": "gcatkjspkgs/kubejs-more-recipe-types",
     "boss-tools-oxygen": "gcatkjspkgs/boss-tools-oxygen-js",
