@@ -3,3 +3,4 @@ requests
 GitPython
 thefuzz
 python-Levenshtein
+toml

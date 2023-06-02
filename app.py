@@ -3,11 +3,12 @@
 # IMPORTS
 
 # Built-in modules
-from os import path, remove, getcwd, makedirs, walk, chmod, system, environ # Working with files
+from os import path, remove, getcwd, makedirs, walk, chmod, system, environ, listdir # Working with files
 from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from tempfile import gettempdir # Get tmp dir of current os
-from json import dump, load, dumps # Json
+from json import dump, load, dumps, loads # Json
+from zipfile import ZipFile # Working with .jars
 
 from http import server # Discord login stuff
 from urllib.parse import urlparse, parse_qs # Parse url path
@@ -22,6 +23,8 @@ from fire import Fire # CLI tool
 
 from requests import get, post, exceptions # Requests
 from git import Repo, GitCommandNotFound, GitCommandError # Git cloning
+
+from toml import loads as tomlload # Read .tomls
 
 # CONSTANTS
 VERSIONS = { # Version and version keys
@@ -119,6 +122,12 @@ def _update_manifest(): # Update .kjspkg file
 def _enable_reflection(): # Enable reflection on 1.16
     with open(path.join("config", "common.properties"), "a+") as f:
         if ("invertClassLoader=true" not in f.read().splitlines()): f.write("invertClassLoader=true")
+def _get_modid(modpath:str) -> str: # Get mod id from a mod file
+    modfile = ZipFile(path.join(getcwd(), "..", "mods", modpath))
+
+    if kjspkgfile["modloader"]=="forge": return tomlload(modfile.open(path.join("META-INF", "mods.toml")).read().decode("utf-8"))["mods"][0]["modId"]
+    else: return loads(modfile.open(modfile.open("fabric.mod.json").read().decode("utf-8")))["id"]
+
 # def _discord_login(): # Login with discord for discord prefixes
 #     server.HTTPServer(("", 1337), HTTPDiscordLoginRequestHandler).handle_request()
 
@@ -224,7 +233,15 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
 
     # Install dependencies & check for incompats
     if "dependencies" in package.keys():
-        for dep in package["dependencies"]: _install_pkg(dep.lower(), False, skipmissing, noreload)
+        # Get a list of all mod ids
+        if any([i.startswith("mod:") for i in package["dependencies"]]):
+            modids = []
+            for i in listdir(path.join(getcwd(), "..", "mods")):
+                if i.endswith(".jar"): modids.append(_get_modid(i))
+
+        for dep in package["dependencies"]: 
+            if dep.lower().startswith("mod:") and _remove_prefix(dep.lower()) not in modids and not skipmissing: _err(f"Mod \"{_remove_prefix(dep).title()}\" not found.") # Check for mod dependency
+            elif not dep.lower().startswith("mod:"): _install_pkg(dep.lower(), False, skipmissing, noreload) # Install package dependency
     if "incompatibilities" in package.keys(): 
         for i in kjspkgfile["installed"].keys(): 
             if i in package["incompatibilities"]: _err(f"Incompatible package: "+i) # Throw err if incompats detected
@@ -330,7 +347,7 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 
 {info["description"]}
 
-{_bold("Dependencies")}: {", ".join([i.title() for i in info["dependencies"]]) if "dependencies" in info.keys() and len(info["dependencies"])>0 else "*nothing here*"}
+{_bold("Dependencies")}: {", ".join([_remove_prefix(i).title().replace("-", " ").replace("_", " ")+(" ("+i.split(":")[0].title()+")" if ":" in i else "") for i in info["dependencies"]]) if "dependencies" in info.keys() and len(info["dependencies"])>0 else "*nothing here*"}
 {_bold("Incompatibilities")}: {", ".join([i.title() for i in info["incompatibilities"]]) if "incompatibilities" in info.keys() and len(info["incompatibilities"])>0 else "*compatible with everything!*"}
 
 {_bold("License")}: {info["license"]}
@@ -502,6 +519,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
     FUNCTIONS = { # Command mappings
         "install": install,
         "download": install,
+        "add": install,
         "remove": removepkg,
         "uninstall": removepkg,
         "rm": removepkg,
@@ -509,6 +527,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         "updateall": updateall,
         "list": listpkgs,
         "pkg": pkginfo,
+        "pkginfo": pkginfo,
         "listall": listall,
         "all": listall,
         "search": search,
@@ -543,7 +562,7 @@ if __name__=="__main__": # If not imported
 
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
-    except TypeError: _err("Wrong syntax") # Wrong syntax err
+    # except TypeError: _err("Wrong syntax") # Wrong syntax err
     except GitCommandNotFound: _err("Git not found. Install it here: https://git-scm.com/downloads") # Git not found err
     except (exceptions.ConnectionError, exceptions.ReadTimeout): _err("Low internet connection") # Low internet connection err
 
