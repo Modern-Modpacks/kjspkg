@@ -9,9 +9,11 @@
     "cutscenejs": "TheRealQuentin765/cutscenes-kubejs",
 
     "tic-deco-fix": "gcatkjspkgs/tcondecofix",
+    "create-water-bucket-mixing-fix": "gcatkjspkgs/create-water-bucket-mixing-fix",
+
     "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
     "entity-snip-snip": "gcatkjspkgs/entity-snip-snip",
-    "create-water-bucket-mixing-fix": "gcatkjspkgs/create-water-bucket-mixing-fix",
+    "create-external-sequenced-assembly": "gcatkjspkgs/create-external-sequenced-assembly",
 
     "soljs": "gcatkjspkgs/SoLJS",
     "pongjs": "gcatkjspkgs/PongJS",
