@@ -354,7 +354,7 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 {info["description"]}
 
 {_bold("Dependencies")}: {", ".join([_remove_prefix(i).title().replace("-", " ").replace("_", " ")+(" ("+i.split(":")[0].title()+")" if ":" in i else "") for i in info["dependencies"]]) if "dependencies" in info.keys() and len(info["dependencies"])>0 else "*nothing here*"}
-{_bold("Incompatibilities")}: {", ".join([i.title() for i in info["incompatibilities"]]) if "incompatibilities" in info.keys() and len(info["incompatibilities"])>0 else "*compatible with everything!*"}
+{_bold("Incompatibilities")}: {", ".join([_remove_prefix(i).title().replace("-", " ").replace("_", " ")+(" ("+i.split(":")[0].title()+")" if ":" in i else "") for i in info["incompatibilities"]]) if "incompatibilities" in info.keys() and len(info["incompatibilities"])>0 else "*compatible with everything!*"}
 
 {_bold("License")}: {info["license"]}
 {_bold("GitHub")}: https://github.com/{info["repo"]}/tree/{info["branch"]}
