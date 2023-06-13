@@ -127,6 +127,12 @@ def _get_modid(modpath:str) -> str: # Get mod id from a mod file
 
     if kjspkgfile["modloader"]=="forge": return tomlload(modfile.open(path.join("META-INF", "mods.toml")).read().decode("utf-8"))["mods"][0]["modId"]
     else: return loads(modfile.open(modfile.open("fabric.mod.json").read().decode("utf-8")))["id"]
+def _get_modids() -> list: # Get all mod ids
+    modids = []
+    for i in listdir(path.join(getcwd(), "..", "mods")):
+        if i.endswith(".jar"): modids.append(_get_modid(i)) # For each mod file, get the mod id and append
+
+    return modids # Return the list of modids
 
 # def _discord_login(): # Login with discord for discord prefixes
 #     server.HTTPServer(("", 1337), HTTPDiscordLoginRequestHandler).handle_request()
@@ -232,19 +238,17 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
     if kjspkgfile["modloader"] not in package["modloaders"]: _err(f"Unsupported modloader \"{kjspkgfile['modloader'].title()}\" for package \"{pkg}\"")
 
     # Install dependencies & check for incompats
-    if "dependencies" in package.keys():
-        # Get a list of all mod ids
-        if any([i.startswith("mod:") for i in package["dependencies"]]):
-            modids = []
-            for i in listdir(path.join(getcwd(), "..", "mods")):
-                if i.endswith(".jar"): modids.append(_get_modid(i))
+    modids = []
+    if (("dependencies" in package.keys() and any([i.startswith("mod:") for i in package["dependencies"]])) or ("incompatibilities" in package.keys() and any([i.startswith("mod:") for i in package["incompatibilities"]]))): modids = _get_modids() # Get a list of all mod ids
 
+    if "dependencies" in package.keys():
         for dep in package["dependencies"]: 
-            if dep.lower().startswith("mod:") and _remove_prefix(dep.lower()) not in modids and not skipmissing: _err(f"Mod \"{_remove_prefix(dep).title()}\" not found.") # Check for mod dependency
+            if dep.lower().startswith("mod:") and _remove_prefix(dep.lower()) not in modids: _err(f"Mod \"{_remove_prefix(dep).title()}\" not found.") # Check for mod dependency
             elif not dep.lower().startswith("mod:"): _install_pkg(dep.lower(), False, skipmissing, noreload) # Install package dependency
     if "incompatibilities" in package.keys(): 
-        for i in kjspkgfile["installed"].keys(): 
-            if i in package["incompatibilities"]: _err(f"Incompatible package: "+i) # Throw err if incompats detected
+        for i in package["incompatibilities"]:
+            if i.lower().startswith("mod:") and _remove_prefix(i.lower()) in modids: _err(f"Incompatible mod: "+_remove_prefix(i).title()) # Check for mod incompats
+            elif i in kjspkgfile["installed"].keys(): _err(f"Incompatible package: "+i) # Throw err if incompats detected
 
     tmpdir = _create_tmp(pkg) # Create a temp dir
     try: Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir, branch=package["branch"]) # Install the repo into the tmp dir
