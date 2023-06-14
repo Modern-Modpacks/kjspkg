@@ -1,10 +1,12 @@
 {
     "kjspkg-compat-layer": "gcatkjspkgs/kjspkg-compat-layer",
 
+    "trippers-titles": "gcatkjspkgs/trippers-titles",
+    "thermalootjs": "gcatkjspkgs/thermalootjs",
+
     "amogus": "gcatkjspkgs/kjspkg-test",
     "more-recipe-types": "gcatkjspkgs/kubejs-more-recipe-types",
     "boss-tools-oxygen": "gcatkjspkgs/boss-tools-oxygen-js",
-    "trippers-titles": "gcatkjspkgs/trippers-titles",
 
     "cutscenejs": "TheRealQuentin765/cutscenes-kubejs",
 
