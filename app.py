@@ -243,11 +243,11 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
 
     if "dependencies" in package.keys():
         for dep in package["dependencies"]: 
-            if dep.lower().startswith("mod:") and _remove_prefix(dep.lower()) not in modids: _err(f"Mod \"{_remove_prefix(dep).title()}\" not found.") # Check for mod dependency
+            if dep.lower().startswith("mod:") and _remove_prefix(dep.lower()) not in modids: _err(f"Mod \"{_remove_prefix(dep.replace('_', ' ').replace('-', ' ')).title()}\" not found.") # Check for mod dependency
             elif not dep.lower().startswith("mod:"): _install_pkg(dep.lower(), False, skipmissing, noreload) # Install package dependency
     if "incompatibilities" in package.keys(): 
         for i in package["incompatibilities"]:
-            if i.lower().startswith("mod:") and _remove_prefix(i.lower()) in modids: _err(f"Incompatible mod: "+_remove_prefix(i).title()) # Check for mod incompats
+            if i.lower().startswith("mod:") and _remove_prefix(i.lower()) in modids: _err(f"Incompatible mod: "+_remove_prefix(i.replace('_', ' ').replace('-', ' ')).title()) # Check for mod incompats
             elif i in kjspkgfile["installed"].keys(): _err(f"Incompatible package: "+i) # Throw err if incompats detected
 
     tmpdir = _create_tmp(pkg) # Create a temp dir
