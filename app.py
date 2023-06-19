@@ -125,12 +125,16 @@ def _enable_reflection(): # Enable reflection on 1.16
 def _get_modid(modpath:str) -> str: # Get mod id from a mod file
     modfile = ZipFile(path.join(getcwd(), "..", "mods", modpath))
 
-    if kjspkgfile["modloader"]=="forge": return tomlload(modfile.open(path.join("META-INF", "mods.toml")).read().decode("utf-8"))["mods"][0]["modId"]
-    else: return loads(modfile.open(modfile.open("fabric.mod.json").read().decode("utf-8")))["id"]
+    try:
+        if kjspkgfile["modloader"]=="forge": return tomlload(modfile.open(path.join("META-INF", "mods.toml")).read().decode("utf-8"))["mods"][0]["modId"]
+        else: return loads(modfile.open(modfile.open("fabric.mod.json").read().decode("utf-8")))["id"]
+    except KeyError: return # Check for wierd mods with no mods.toml/fabric.mod.json
 def _get_modids() -> list: # Get all mod ids
     modids = []
     for i in listdir(path.join(getcwd(), "..", "mods")):
-        if i.endswith(".jar"): modids.append(_get_modid(i)) # For each mod file, get the mod id and append
+        if i.endswith(".jar"): 
+            modid = _get_modid(i)
+            if modid: modids.append(modid) # For each mod file, get the mod id and append
 
     return modids # Return the list of modids
 
