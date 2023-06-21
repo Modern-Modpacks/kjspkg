@@ -378,7 +378,7 @@ def listall(*, count:bool=False, search:str="", reload:bool=True, carbon:bool=Fa
         print(len(allpkgs)) # Print the pkg count
         return
     if not search: # If no search query
-        print("\n".join(allpkgs)) # Print all pkg names
+        print("\n".join(sorted(allpkgs))) # Print all pkg names
         return
 
     filterwarnings("ignore") # Ignore the warning thefuzz produces
