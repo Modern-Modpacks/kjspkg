@@ -8,6 +8,8 @@ from shutil import rmtree, move, copy # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from tempfile import gettempdir # Get tmp dir of current os
 from json import dump, load, dumps, loads # Json
+from multiprocessing import Process # Async threads
+from time import sleep # Honk mimimimimimimi
 from zipfile import ZipFile # Working with .jars
 
 from http import server # Discord login stuff
@@ -90,6 +92,17 @@ def _err(err:str): # Handle errors
     exit(1) # Quit
 def _remove_prefix(pkgname:str) -> str: return pkgname.split(":")[-1] # Remove prefix
 def _format_github(pkgname:str) -> str: return _remove_prefix(pkgname).split('/')[-1].split("@")[0] # Remove github author and branch
+def _loading_anim(prefix:str=""): # Loading animation
+    loading = "⡆⠇⠋⠙⠸⢰⣠⣄" # Animation frames
+    i = 0
+    while 1:
+        print(_bold(prefix+" "+loading[i % len(loading)]), end="\r") # Print the next anim frame
+        i += 1
+        sleep(.1)
+def _loading_thread(*args) -> Process:  # Loading animation thread
+    thread = Process(target=_loading_anim, args=args) # Create a thread
+    thread.start() # Start it
+    return thread # Return it
 def _dumbass_windows_path_error(f, p:str, e): chmod(p, S_IWRITE) # Dumbass windows path error
 
 # TMP HELPER FUNCTIONS
@@ -217,11 +230,11 @@ def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
         "repo": pkg,
         "branch": "main" if "@" not in pkg else pkg.split("@")[-1]
     }
-def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Install the pkg
+def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, noreload:bool): # Install the pkg
     if not update and _format_github(pkg) in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
         if pkg=="*": # If updating all packages
-            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, skipmissing) # Update all packages
+            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing) # Update all packages
             return
 
         _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
@@ -248,11 +261,13 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
     if "dependencies" in package.keys():
         for dep in package["dependencies"]: 
             if dep.lower().startswith("mod:") and _remove_prefix(dep.lower()) not in modids: _err(f"Mod \"{_remove_prefix(dep.replace('_', ' ').replace('-', ' ')).title()}\" not found.") # Check for mod dependency
-            elif not dep.lower().startswith("mod:"): _install_pkg(dep.lower(), False, skipmissing, noreload) # Install package dependency
+            elif not dep.lower().startswith("mod:"): _install_pkg(dep.lower(), dep.lower() in kjspkgfile["installed"], quiet, skipmissing, noreload) # Install/update package dependency
     if "incompatibilities" in package.keys(): 
         for i in package["incompatibilities"]:
             if i.lower().startswith("mod:") and _remove_prefix(i.lower()) in modids: _err(f"Incompatible mod: "+_remove_prefix(i.replace('_', ' ').replace('-', ' ')).title()) # Check for mod incompats
             elif i in kjspkgfile["installed"].keys(): _err(f"Incompatible package: "+i) # Throw err if incompats detected
+
+    if not quiet: loadthread = _loading_thread(f"{'Installing' if not update else 'Updating'} {_format_github(pkg)}...") # Start the loading animation
 
     tmpdir = _create_tmp(pkg) # Create a temp dir
     try: Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir, branch=package["branch"]) # Install the repo into the tmp dir
@@ -284,6 +299,12 @@ def _install_pkg(pkg:str, update:bool, skipmissing:bool, noreload:bool): # Insta
                 assetfiles.append(finalpath) # Add it to assetfiles
 
     kjspkgfile["installed"][pkg] = assetfiles # Add the pkg to installed
+
+    if not quiet:
+        loadthread.terminate() # Kill the loading animation
+        if pkg=="*": print(_bold(f"All packages updated succesfully! ✓")) # Show message if all packages are updated
+        else: print(_bold(f"Package \"{_format_github(pkg)}\" {'installed' if not update else 'updated'} succesfully! ✓")) # Show message if one package is installed/updated
+    
 def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
     if pkg not in kjspkgfile["installed"].keys():
         if not skipmissing: _err(f"Package \"{pkg}\" is not installed") # If the pkg is not installed, err
@@ -316,14 +337,13 @@ def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=Fal
                 else: return # Stop if no skipmissing
 
         if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{_format_github(pkg)}\" not found") # Err if package not found during update
-        _install_pkg(pkg, update, skipmissing, reload) # Install package
-        if not quiet and pkg=="*": print(_bold(f"All packages updated succesfully!")) # Show message if all packages are updated
-        elif not quiet: print(_bold(f"Package \"{_format_github(pkg)}\" {'installed' if not update else 'updated'} succesfully!")) # Show message if one package is installed/updated
+        _install_pkg(pkg, update, quiet, skipmissing, reload) # Install package
+        
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
     for pkg in pkgs:
         pkg = pkg.lower()
         _remove_pkg(pkg, skipmissing)
-        if not quiet: print(_bold(f"Package \"{pkg}\" removed succesfully!"))
+        if not quiet: print(_bold(f"Package \"{pkg}\" removed succesfully! ✓"))
 def update(*pkgs:str, **kwargs): # Update pkgs
     install(*pkgs, update=True, **kwargs)
 def updateall(**kwargs): # Update all pkgs
