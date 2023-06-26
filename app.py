@@ -234,7 +234,7 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, noreload:bo
     if not update and _format_github(pkg) in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
         if pkg=="*": # If updating all packages
-            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing) # Update all packages
+            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing, noreload) # Update all packages
             return
 
         _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
