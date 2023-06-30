@@ -386,7 +386,7 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
 {_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
 {
-    nl+_bold("KJSPKG Lookup")+": https://kjspkglookup.modernmodpacks.site/#amogus"+nl if ":" not in pkg or pkg.split(":")[0]=="kjspkg" else ""
+    nl+_bold("KJSPKG Lookup")+": https://kjspkglookup.modernmodpacks.site/#"+pkg+nl if ":" not in pkg or pkg.split(":")[0]=="kjspkg" else ""
 }""")
 def listall(*, count:bool=False, search:str="", reload:bool=True, carbon:bool=False): # List all pkgs
     if not carbon:
