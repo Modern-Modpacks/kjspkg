@@ -84,10 +84,10 @@ kjspkg help
 
 ### KJSPKG badges
 
-[![kjspkg-available](https://github.com/Modern-Modpacks/kjspkg/assets/79367505/fb848719-d52e-471b-a6cf-2c0ea6729f1c)](https://kjspkglookup.modernmodpacks.site/#)
+[![kjspkg-available](https://github-production-user-asset-6210df.s3.amazonaws.com/79367505/250114674-fb848719-d52e-471b-a6cf-2c0ea6729f1c.svg)](https://kjspkglookup.modernmodpacks.site/#)
 
 ```md
-[![kjspkg-available](https://github.com/Modern-Modpacks/kjspkg/assets/79367505/fb848719-d52e-471b-a6cf-2c0ea6729f1c)](https://kjspkglookup.modernmodpacks.site/#{packagename})
+[![kjspkg-available](https://github-production-user-asset-6210df.s3.amazonaws.com/79367505/250114674-fb848719-d52e-471b-a6cf-2c0ea6729f1c.svg)](https://kjspkglookup.modernmodpacks.site/#{packagename})
 ```
 
 ## Supported versions
