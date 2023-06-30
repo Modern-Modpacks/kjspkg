@@ -36,5 +36,7 @@
     "entity-snip-snip": "gcatkjspkgs/entity-snip-snip",
     "mekanism-custom-infused-type": "gcatkjspkgs/mekanism-custom-infused-type@1.18",
 
-    "playeranimator-kubejs": "squoshi/playeranimator-kubejs"
+    "playeranimator-kubejs": "squoshi/playeranimator-kubejs",
+
+    "gregicsifting": "Drackion/GregicSifting"
 }
