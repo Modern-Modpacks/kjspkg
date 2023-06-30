@@ -405,7 +405,7 @@ def listall(*, count:bool=False, search:str="", reload:bool=True, carbon:bool=Fa
     from thefuzz import process # Fuzzy search
 
     # Get results and print the best ones
-    results = process.extract(search, allpkgs)
+    results = process.extract(search, allpkgs, limit=25)
     for result, ratio in results:
         if ratio>75: print(result)
 def search(*query:str, **kwags): # Search for pkgs
