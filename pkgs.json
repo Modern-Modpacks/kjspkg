@@ -9,6 +9,8 @@
     "boss-tools-oxygen": "gcatkjspkgs/boss-tools-oxygen-js",
 
     "cutscenejs": "TheRealQuentin765/cutscenes-kubejs",
+    "playeranimator-kubejs": "squoshi/playeranimator-kubejs",
+    "gregicsifting": "Drackion/GregicSifting",
 
     "soljs": "gcatkjspkgs/SoLJS",
     "pongjs": "gcatkjspkgs/PongJS",
@@ -35,8 +37,5 @@
     "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
     "entity-snip-snip": "gcatkjspkgs/entity-snip-snip",
     "mekanism-custom-infused-type": "gcatkjspkgs/mekanism-custom-infused-type@1.18",
-
-    "playeranimator-kubejs": "squoshi/playeranimator-kubejs",
-
-    "gregicsifting": "Drackion/GregicSifting"
+    "extended-days": "gcatkjspkgs/extended-days"
 }
