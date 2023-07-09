@@ -12,6 +12,9 @@
     "playeranimator-kubejs": "squoshi/playeranimator-kubejs",
     "gregicsifting": "Drackion/GregicSifting",
 
+    "entity-snip-snip": "gcatkjspkgs/entity-snip-snip",
+    "craft-js": "breakinblocks/Craft.js",
+
     "soljs": "gcatkjspkgs/SoLJS",
     "pongjs": "gcatkjspkgs/PongJS",
 
@@ -35,10 +38,6 @@
     "create-water-bucket-mixing-fix": "gcatkjspkgs/create-water-bucket-mixing-fix",
 
     "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
-    "entity-snip-snip": "gcatkjspkgs/entity-snip-snip",
-
     "mekanism-custom-infused-type": "gcatkjspkgs/mekanism-custom-infused-type@1.18",
-    "extended-days": "gcatkjspkgs/extended-days",
-
-    "craft.js": "breakinblocks/Craft.js"
+    "extended-days": "gcatkjspkgs/extended-days"
 }
