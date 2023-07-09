@@ -40,5 +40,5 @@
     "mekanism-custom-infused-type": "gcatkjspkgs/mekanism-custom-infused-type@1.18",
     "extended-days": "gcatkjspkgs/extended-days",
 
-    "create.js": "TheonlyTazz/Craft.js"
+    "craft.js": "breakinblocks/Craft.js"
 }
