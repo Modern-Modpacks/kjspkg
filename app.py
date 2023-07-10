@@ -3,12 +3,16 @@
 # IMPORTS
 
 # Built-in modules
-from os import path, remove, getcwd, makedirs, walk, chmod, system, environ, listdir # Working with files
-from shutil import rmtree, move, copy # More file stuff
+from os import path, remove, getcwd, makedirs, walk, chmod, chdir, system, getenv, listdir # Working with files and system stuff
+from os import name as osname # Windows/linux
+from shutil import rmtree, move, copy, copytree # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from tempfile import gettempdir # Get tmp dir of current os
+from psutil import process_iter # Get processes
+from subprocess import run, DEVNULL # Subprocesses
 from json import dump, load, dumps, loads # Json
 from multiprocessing import Process # Async threads
+from signal import signal, SIGTERM # Signals in threads
 from time import sleep # Honk mimimimimimimi
 from zipfile import ZipFile # Working with .jars
 
@@ -52,6 +56,7 @@ CONFIG = { # Default config
     "installed": {},
     "trustgithub": False
 }
+NL = "\n" # Bruh
 
 # VARIABLES
 kjspkgfile = {} # .kjspkg file
@@ -95,15 +100,23 @@ def _format_github(pkgname:str) -> str: return _remove_prefix(pkgname).split('/'
 def _loading_anim(prefix:str=""): # Loading animation
     loading = "⡆⠇⠋⠙⠸⢰⣠⣄" # Animation frames
     i = 0
-    while 1:
-        print(_bold(prefix+" "+loading[i % len(loading)]), end="\r") # Print the next anim frame
-        i += 1
-        sleep(.1)
+
+    # Termination
+    def terminate(*args): print(" "*(len(prefix)+2), end="\r"); exit(0)
+    signal(SIGTERM, terminate)
+
+    try:
+        while 1:
+            print(_bold(prefix+" "+loading[i % len(loading)]), end="\r") # Print the next anim frame
+            i += 1
+            sleep(.1)
+    except KeyboardInterrupt: terminate() # Terminate on keyboard interrupt
 def _loading_thread(*args) -> Process:  # Loading animation thread
     thread = Process(target=_loading_anim, args=args) # Create a thread
     thread.start() # Start it
     return thread # Return it
 def _dumbass_windows_path_error(f, p:str, e): chmod(p, S_IWRITE) # Dumbass windows path error
+def _check_for_fun(): return getenv("NO_FUN_ALLOWED") == None # Disable easter eggs
 
 # TMP HELPER FUNCTIONS
 def _create_tmp(pathintmp:str) -> str: # Create a temp directory and return its path
@@ -230,6 +243,31 @@ def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
         "repo": pkg,
         "branch": "main" if "@" not in pkg else pkg.split("@")[-1]
     }
+def _move_pkg_contents(pkg:str, tmpdir:str): # Move the contents of the pkg to the .kjspkg folders
+    licensefile = path.join(tmpdir, "LICENSE") 
+    if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.txt")
+    for dir in SCRIPT_DIRS: # Clone scripts & licenses into the main kjs folders
+        tmppkgpath = path.join(tmpdir, dir)
+        finalpkgpath = path.join(dir, ".kjspkg", pkg)
+        if path.exists(tmppkgpath):
+            move(tmppkgpath, finalpkgpath) # Files
+            if path.exists(licensefile): copy(licensefile, finalpkgpath) # License
+
+    assetfiles = [] # Pkg's asset files
+    for dir in ASSET_DIRS: # Clone assets
+        tmppkgpath = path.join(tmpdir, dir) # Get asset path
+        if not path.exists(tmppkgpath): continue
+
+        for dirpath, _, files in walk(tmppkgpath): # For each file in assets/data
+            for name in files:
+                tmppath = path.join(dirpath, name)
+                finalpath = path.sep.join(tmppath.split(path.sep)[2:])
+
+                makedirs(path.sep.join(finalpath.split(path.sep)[:-1]), exist_ok=True) # Create parent dirs
+                move(tmppath, finalpath) # Move it to the permanent dir
+                assetfiles.append(finalpath) # Add it to assetfiles
+    
+    kjspkgfile["installed"][pkg] = assetfiles # Add the pkg to installed
 def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, noreload:bool): # Install the pkg
     if not update and _format_github(pkg) in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
@@ -275,30 +313,7 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, noreload:bo
 
     pkg = _format_github(pkg) # Remove github author and branch if present
 
-    licensefile = path.join(tmpdir, "LICENSE") 
-    if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.txt")
-    for dir in SCRIPT_DIRS: # Clone scripts & licenses into the main kjs folders
-        tmppkgpath = path.join(tmpdir, dir)
-        finalpkgpath = path.join(dir, ".kjspkg", pkg)
-        if path.exists(tmppkgpath):
-            move(tmppkgpath, finalpkgpath) # Files
-            if path.exists(licensefile): copy(licensefile, finalpkgpath) # License
-
-    assetfiles = [] # Pkg's asset files
-    for dir in ASSET_DIRS: # Clone assets
-        tmppkgpath = path.join(tmpdir, dir) # Get asset path
-        if not path.exists(tmppkgpath): continue
-
-        for dirpath, _, files in walk(tmppkgpath): # For each file in assets/data
-            for name in files:
-                tmppath = path.join(dirpath, name)
-                finalpath = path.sep.join(tmppath.split(path.sep)[2:])
-
-                makedirs(path.sep.join(finalpath.split(path.sep)[:-1]), exist_ok=True) # Create parent dirs
-                move(tmppath, finalpath) # Move it to the permanent dir
-                assetfiles.append(finalpath) # Add it to assetfiles
-
-    kjspkgfile["installed"][pkg] = assetfiles # Add the pkg to installed
+    _move_pkg_contents(pkg, tmpdir) # Move the contents of the pkg to the kubejs folder
 
     if not quiet:
         loadthread.terminate() # Kill the loading animation
@@ -318,7 +333,7 @@ def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
 
     del kjspkgfile["installed"][pkg] # Remove the pkg from installed
 
-# COMMAND FUNCTIONS
+# MAIN COMMAND FUNCTIONS
 def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=False, reload:bool=True): # Install pkgs
     if update and not pkgs: pkgs = ("*",) # If update is passed and not pkgs are, set them to all pkgs
 
@@ -353,7 +368,7 @@ def listpkgs(*, count:bool=False): # List pkgs
         print(len(kjspkgfile["installed"].keys()))
         return
 
-    if (len(kjspkgfile["installed"].keys())==0): # Easter egg if 0 pkg installed
+    if (len(kjspkgfile["installed"].keys())==0 and _check_for_fun()): # Easter egg if 0 pkg installed
         print(_bold("*nothing here, noone around to help*"))
         return
 
@@ -368,8 +383,6 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
     if script:
         print(dumps(info))
         return
-
-    nl = "\n" # Bruh
 
     # Print it (pretty)
     print(f"""
@@ -386,7 +399,7 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
 {_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
 {
-    nl+_bold("KJSPKG Lookup")+": https://kjspkglookup.modernmodpacks.site/#"+pkg+nl if ":" not in pkg or pkg.split(":")[0]=="kjspkg" else ""
+    NL+_bold("KJSPKG Lookup")+": https://kjspkglookup.modernmodpacks.site/#"+pkg+NL if ":" not in pkg or pkg.split(":")[0]=="kjspkg" else ""
 }""")
 def listall(*, count:bool=False, search:str="", reload:bool=True, carbon:bool=False): # List all pkgs
     if not carbon:
@@ -451,6 +464,161 @@ def init(*, quiet:bool=False, override:bool=False, cancreate:str=None, **configa
     if not quiet: print(_bold("Project created!")) # Woo!
 def uninit(*, confirm:bool=False): # Remove the project
     if confirm or input("\u001b[31;1mDOING THIS WILL REMOVE ALL PACKAGES AND UNINSTALL KJSPKG COMPLETELY, ARE YOU SURE YOU WANT TO PROCEED? (y/N): \u001b[0m").lower()=="y": _delete_project() 
+
+# DEV COMMAND FUNCTIONS
+def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddeps:bool=False, quiet:bool=False): # Run a test instance
+    global kjspkgfile
+
+    # Errs
+    if not path.exists(".kjspkg"): _err(".kjspkg file not found. Add one according to the KJSPKG README (https://github.com/Modern-Modpacks/kjspkg/blob/main/README.md) and then re-run.") # No .kjspkg file error
+    manifest = load(open(".kjspkg")) # Parse the json file
+    if "description" not in manifest.keys(): _err("Invalid manifest. You are probably running this command inside of an instance instead of a package.") # Invalid schema error
+
+    if version==None: # If the version is not specified
+        if len(manifest["versions"])==1: version = str(manifest["versions"][0]) # Select the only one
+        else: version = input(_bold(f"What version would you like to test the package for? ({'/'.join([str(i) for i in manifest['versions']])}) ")).lower() # Or ask if multiple
+    if not (isinstance(version, int) or version.isnumeric()) or int(version) not in manifest['versions']: _err("Unknown version: "+version) # Err if the version is unknown
+    if version=="2": _err("Testing for 1.12 is not supported") # 1.12 not supported :shrug:
+
+    if modloader==None: # If the modloader is not specified
+        if len(manifest["modloaders"])==1: modloader = manifest["modloaders"][0] # Select the only one
+        else: modloader = input(_bold(f"What modloader would you like to test the package for? ({'/'.join(manifest['modloaders'])}) ")).lower() # Or ask if multiple
+    if modloader not in manifest['modloaders']: _err("Unknown modloader: "+modloader) # Err if the modloader is unknown
+
+    if osname=="nt": # Windows paths
+        LAUNCHERPATHS = {
+            "PrismLauncher": path.join(getenv("LOCALAPPDATA"), "Programs", "PrismLauncher", "prismlauncher.exe"),
+            "multimc": path.join(getenv("USERPROFILE"), "Downloads", "MultiMC", "MultiMC.exe")
+        }
+    else: # Posix paths
+        LAUNCHERPATHS = {
+            "PrismLauncher": "/usr/bin/prismlauncher",
+            "multimc": "/opt/multimc/run.sh"
+        }
+
+    if launcher==None: # If the launcher is not specified
+        launcher = ""
+        for l, p in LAUNCHERPATHS.items():
+            if path.exists(p):
+                launcher = l # Find the one that's installed
+                break
+        if not launcher: _err("Prism/MultiMC was not found. Please install one of these launchers.")
+    else: # If it is specified
+        if launcher.lower() in ("prism", "prismlauncher"): launcher = "PrismLauncher" # Replace prism with prismlauncher
+        if launcher.lower()=="multi": launcher = "multimc" # Replace multi with multimc
+
+        if launcher.lower() not in [i.lower() for i in LAUNCHERPATHS.keys()]: _err("Launcher doesn't exist or not supported: "+launcher.title()) # Err if unknown launcher
+        elif not path.exists({k.lower(): v for k, v in LAUNCHERPATHS.items()}[launcher.lower()]): _err("Launcher not installed: "+launcher.title()) # Err if the launcher isn't installed
+
+    # Kill all launcher windows
+    for i in process_iter():
+        if launcher.lower() in i.name().lower(): i.kill()
+
+    instancename = f"kjspkg{version}{manifest['modloaders'][0]}" # Instance name
+    instancepath = path.expanduser(f"~/.local/share/{launcher}/instances/{instancename}") # Instance path
+    instancezippath = path.join(gettempdir(), instancename+".zip") # Path to instance's zipped file
+    if not path.exists(instancepath): # If instance doesn't exit
+        with open(instancezippath, "wb+") as f:
+            f.write(get(f"https://github.com/Modern-Modpacks/kjspkg/raw/main/instances/{instancename}.zip").content) # Downlaod the zip
+
+        if not quiet: print(_bold("A launcher window should now appear, please import the instance, config it if you need and close the window."))
+        run([LAUNCHERPATHS[launcher], "-I", instancezippath], stdout=DEVNULL, stderr=DEVNULL) # Import
+
+    pkgpath = getcwd() # Save the package file
+    chdir(path.join(instancepath, ".minecraft", "kubejs")) # Change the cwd to the instance
+    kjspkgfile = load(open(".kjspkg")) # Load the .kjspkg file
+
+    # Install deps
+    if "dependencies" in manifest.keys():
+        modids = _get_modids() # Get mod ids
+        for dep in manifest["dependencies"]: # For each dep
+            if dep.startswith("mod:") and _remove_prefix(dep.lower()) not in modids: # If a mod dep is not found
+                if ignoremoddeps and not quiet: print(_bold(f"!!! Mod `{_remove_prefix(dep)}` is not installed, but it's ignored since ignoremoddeps is specified.")) # Warn if ignoremoddeps is true
+                else: _err(f"Your package depends on `{_remove_prefix(dep)}`, which is not installed.") # Or err if it's false
+            elif not dep.startswith("mod:"): _install_pkg(dep, False, True, True, False) # Install package deps
+
+    makedirs("tmp", exist_ok=True) # Create a tempdir
+    tmpdir = copytree(pkgpath, "tmp/test") # Copy the test package contents
+    _move_pkg_contents("test", tmpdir) # Install
+    rmtree(tmpdir) # Remove the temp folder
+
+    if not quiet: loadthread = _loading_thread("Running test instance...") # Loading anim
+    try: run([LAUNCHERPATHS[launcher], "-l", instancename], stdout=DEVNULL, stderr=DEVNULL) # Run the instance
+    except KeyboardInterrupt: pass # Stop on keyboard interrupt
+
+    if not quiet:
+        loadthread.terminate() # Terminate loading anim
+        loadthread.join() # Wait for it to finish
+
+    _remove_pkg("test", True) # Remove the test package
+    for dep in manifest["dependencies"]:
+        if not dep.startswith("mod:"): _remove_pkg(dep, True) # Remove all deps
+
+    chdir(pkgpath) # Change the cwd back to the package dir
+    if not quiet: print(_bold("Test instance killed ✓")) # 👍
+def devdist(description:str=None, author:str=None, dependencies:list=None, incompatibilities:list=None, versions:list=None, modloaders:list=None, distdir:str="dist", gitrepository:bool=True, quiet:bool=False): # Package the scripts automatically
+    if not _check_project(): _err("Current directory does not look like a KubeJS one...") # Check if the cwd is a kubejs one
+
+    # Inputs
+    if description==None: description = input(_bold("Input a description for your package: "))
+    if author==None: author = input(_bold("Enter authors' names that worked on the package")+" (comma separated): ")
+    if dependencies==None: dependencies = input(_bold("Enter dependency names for your package")+" (comma separated, optional): ").lower().replace(" ", "").split(",")
+    if incompatibilities==None: incompatibilities = input(_bold("Enter incompatibility names for your package")+" (comma separated, optional): ").lower().replace(" ", "").split(",")
+
+    kjspkgfile = None
+    if (versions==None or modloaders==None) and path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Load .kjspkg if exists
+
+    if kjspkgfile!=None: # Extract the version number and modloader from .kjspkg
+        if versions==None: versions = (kjspkgfile["version"],)
+        if modloaders==None: modloaders = (kjspkgfile["modloader"],)
+    else: # If .kjspkg is not found
+        if versions==None:
+            versions = input(_bold("Enter the version keys for your package")+" (6/8/9, comma separated): ").replace(" ", "").split(",") # Ask for version
+            for i in versions:
+                if not i.isnumeric or int(i) not in VERSIONS.values(): _err("Unknown version: "+i)
+        if modloaders==None:
+            modloaders = input(_bold("Enter the modloaders for your package")+" (forge/fabric, comma separated): ").replace(" ", "").lower().split(",") # Ask for modloader
+            for i in modloaders:
+                if i not in ("forge", "fabric"): _err("Unknown modloader: "+i)
+
+    # Confirmations
+    if not quiet: input(_bold("Only scripts and assets that start with `kjspkg_` will be added (prefix removed). Press enter to confirm "))
+    if path.exists(distdir):
+        if input(_bold(f"The `{distdir}` folder already exists, remove it?")+" (Y/n): ").lower()!="n" or quiet: rmtree(distdir, onerror=_dumbass_windows_path_error)
+        else: _err("Aborted.")
+
+    for dir in SCRIPT_DIRS+ASSET_DIRS: # For all script and asset dirs
+        makedirs(path.join(distdir, dir), exist_ok=True) # Make dirs in dist
+        for dirpath, _, files in walk(dir): # For all files
+            for name in files:
+                if name.startswith("kjspkg_"): # If the file starts with kjspkg_
+                    makedirs(path.join(distdir, dirpath)) # Create parents
+                    copy(path.join(dirpath, name), path.join(distdir, dirpath, name.removeprefix("kjspkg_"))) # Copy it
+    
+    # Write .kjspkg manifest
+    with open(path.join(distdir, ".kjspkg"), "w+") as f:
+        dump({
+            "author": author,
+            "description": description,
+            
+            "versions": versions,
+            "modloaders": modloaders,
+            "dependencies": dependencies,
+            "incompatibilities": incompatibilities
+        }, f)
+
+    if not quiet: print(_bold("Package generated ✓")) # Woo
+
+    # Set up git repo
+    if gitrepository:
+        repo = Repo.init(distdir) # Init
+        repo.git.add(all=True) # Add
+        repo.index.commit("Initial Commit") # Commit
+        if not quiet: print(_bold("Git repository initialized (don't forget to add a license) ✓")) # Cool
+def devtest(): # Test for syntax errors
+    _err("Not yet implemented.")
+    
+# INFO COMMAND FUNCTIONS
 def info(): # Print the help page
     SPLASHES = [ # Splash list
         "You should run `kjspkg uninit`, NOW!",
@@ -472,8 +640,7 @@ def info(): # Print the help page
     # Info string
     INFO = f"""
 {_bold("KJSPKG")}, a package manager for KubeJS.
-{choice(SPLASHES)}
-
+{choice(SPLASHES)+NL if _check_for_fun() else ""}
 {_bold("Commands:")}
 
 kjspkg install/download [pkgname1] [pkgname2] [--quiet/--skipmissing] [--update] [--noreload] - installs packages
@@ -506,7 +673,21 @@ malezjaa - Creator of CarbonJS
 Juh9870 - Wanted to be here
     """
 
-    print(INFO)
+    print(INFO) # Print the info
+def devinfo(): # Print info about the dev commands
+    # Info string
+    INFO = f"""
+{_bold("Dev commands")}
+Dev utils are experimental, use at your own risk.
+
+kjspkg dev run [--quiet] [--ignoremoddeps] [--launcher "<launcher>"] [--version "<version>"] [--modloader "<modloader>"] - runs your package in a test minecraft instance (requires MultiMC/Prism to be installed)
+kjspkg dev dist [--quiet] [--nogitrepository] [--description "<description>"] [--author "<author>"] [--dependencies "<dep1>,<dep2>"] [--incompatibilities "<incompat1>,<incompat2>"] [--versions "<version1>,<version2>"] [--modloaders "<forge>,<fabric>"] [--distdir "<directory>"] - creates a package from your kubejs folder
+kjspkg dev test - checks your code for syntax errors
+
+kjspkg dev help - shows this message (default behavior)
+    """
+
+    print(INFO) # Print the info
 def guiinfo(): # Print info about the GUI app
     print(f"{_bold('Did you know there is a GUI app for KJSPKG?')} Check it out at https://github.com/Modern-Modpacks/kjspkg-gui!")
 def kombucha(): # Kombucha easter egg
@@ -548,43 +729,63 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
 
     if help: func="help"
 
-    FUNCTIONS = { # Command mappings
-        "install": install,
-        "download": install,
-        "add": install,
-        "remove": removepkg,
-        "uninstall": removepkg,
-        "rm": removepkg,
-        "update": update,
-        "updateall": updateall,
-        "list": listpkgs,
-        "pkg": pkginfo,
-        "pkginfo": pkginfo,
-        "listall": listall,
-        "all": listall,
-        "search": search,
-        "reload": reload,
-        "refresh": reload,
-        "init": init,
-        "uninit": uninit,
-        "help": info,
-        "info": info,
-        "gui": guiinfo,
-        "mold": kombucha
-    }
+    devparser = False
+    if func=="dev":
+        devparser = True # If the func is equal to dev, set the parser to the dev parser
+        if args: # If the args aren't empty
+            func = args[0] # Set the func to the next argument
+            args = args[1:] # And move the args by 1
+        else: func="help" # If the args are empty, default to dev help
 
-    if func not in FUNCTIONS.keys(): _err("Command \""+func+"\" is not found. Run \"kjspkg help\" to see all of the available commands") # Wrong command err
+    if not devparser:
+        FUNCTIONS = { # Non-dev command mappings
+            "install": install,
+            "download": install,
+            "add": install,
+            "remove": removepkg,
+            "uninstall": removepkg,
+            "rm": removepkg,
+            "update": update,
+            "updateall": updateall,
+            "list": listpkgs,
+            "pkg": pkginfo,
+            "pkginfo": pkginfo,
+            "listall": listall,
+            "all": listall,
+            "search": search,
+            "reload": reload,
+            "refresh": reload,
+            "init": init,
+            "uninit": uninit,
+            "help": info,
+            "info": info,
+            "gui": guiinfo
+        }
+        if _check_for_fun(): FUNCTIONS["mold"] = kombucha
+    else:
+        FUNCTIONS = { # Dev command mappings
+            "run": devrun,
+            "dist": devdist,
+            "package": devdist,
+            "test": devtest,
+            "check": devtest,
+            "help": devinfo,
+            "info": devinfo
+        }
+
+    if func not in FUNCTIONS.keys(): _err(f"Command \"{func}\" is not found. Run \"kjspkg {'dev ' if devparser else ''}help\" to see all of the available commands") # Wrong command err
     
-    helperfuncs = (info, guiinfo, init, pkginfo, listall, search, kombucha) # Helper commands that don't require a project
-    if FUNCTIONS[func] not in helperfuncs and not _project_exists(): # If a project is not found, call init
-        print(_bold("Project not found, a new one will be created.\n"))
-        init()
-    if (FUNCTIONS[func]==init or FUNCTIONS[func] not in helperfuncs) and path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Open .kjspkg
+    if not devparser: # Skip the .kjspkg file stuff if the parser is the dev parser
+        helperfuncs = (info, guiinfo, init, pkginfo, listall, search, kombucha) # Helper commands that don't require a project
+        if FUNCTIONS[func] not in helperfuncs and not _project_exists(): # If a project is not found, call init
+            print(_bold("Project not found, a new one will be created.\n"))
+            init()
+        if (FUNCTIONS[func]==init or FUNCTIONS[func] not in helperfuncs) and path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Open .kjspkg
 
     FUNCTIONS[func](*args, **kwargs) # Run the command
 
     # Clean up
-    if path.exists(".kjspkg") and FUNCTIONS[func] not in helperfuncs: # If uninit wasn't called and the command isn't a helper command
+    if not devparser and path.exists(".kjspkg") and FUNCTIONS[func] not in helperfuncs: # If uninit wasn't called, the command isn't a helper command and the parser is not dev
         _update_manifest() # Update .kjspkg
         with open(".kjspkg", "w") as f: dump(kjspkgfile, f) # Save .kjspkg
 
@@ -594,7 +795,7 @@ if __name__=="__main__": # If not imported
 
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
-    # except TypeError: _err("Wrong syntax") # Wrong syntax err
+    except TypeError: _err("Wrong syntax") # Wrong syntax err
     except GitCommandNotFound: _err("Git not found. Install it here: https://git-scm.com/downloads") # Git not found err
     except (exceptions.ConnectionError, exceptions.ReadTimeout): _err("Low internet connection") # Low internet connection err
 
