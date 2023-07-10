@@ -1,5 +1,6 @@
 fire
 requests
+psutil
 GitPython
 thefuzz
 python-Levenshtein
