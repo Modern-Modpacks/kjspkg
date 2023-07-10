@@ -515,7 +515,10 @@ def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddep
         if launcher.lower() in i.name().lower(): i.kill()
 
     instancename = f"kjspkg{version}{manifest['modloaders'][0]}" # Instance name
-    instancepath = path.expanduser(f"~/.local/share/{launcher}/instances/{instancename}") # Instance path
+    if osname=="posix": instancepath = path.expanduser(f"~/.local/share/{launcher}/instances/{instancename}") # Linux instance path
+    else:
+        if launcher=="multimc": path.join(path.sep.join(LAUNCHERPATHS[launcher].split(path.sep)[:-1]), "instances", instancename) # Windows multimc instance path
+        elif launcher=="PrismLauncher": path.join(getenv("APPDATA"), "PrismLauncher", "instances", instancename) # Windows prism instance path
     instancezippath = path.join(gettempdir(), instancename+".zip") # Path to instance's zipped file
     if not path.exists(instancepath): # If instance doesn't exit
         with open(instancezippath, "wb+") as f:
@@ -663,6 +666,7 @@ kjspkg init [--override/--quiet] [--version "<version>"] [--modloader "<modloade
 kjspkg uninit [--confirm] - removes all packages and the project
 
 kjspkg help/info - shows this message (default behavior)
+kjspkg dev - shows info about dev commands
 kjspkg gui - shows info about the GUI app
 
 {_bold("Credits:")}
