@@ -515,11 +515,10 @@ def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddep
         if launcher.lower() in i.name().lower(): i.kill()
 
     instancename = f"kjspkg{version}{manifest['modloaders'][0]}" # Instance name
-    instancepath = "" # Instance path
     if osname=="posix": instancepath = path.expanduser(f"~/.local/share/{launcher}/instances/{instancename}") # Linux instance path
     else:
-        if launcher=="multimc": path.join(path.sep.join(LAUNCHERPATHS[launcher].split(path.sep)[:-1]), "instances", instancename) # Windows multimc instance path
-        elif launcher=="PrismLauncher": path.join(getenv("APPDATA"), "PrismLauncher", "instances", instancename) # Windows prism instance path
+        if launcher=="multimc": instancepath = path.join(path.sep.join(LAUNCHERPATHS[launcher].split(path.sep)[:-1]), "instances", instancename) # Windows multimc instance path
+        elif launcher=="PrismLauncher": instancepath = path.join(getenv("APPDATA"), "PrismLauncher", "instances", instancename) # Windows prism instance path
     instancezippath = path.join(gettempdir(), instancename+".zip") # Path to instance's zipped file
     if not path.exists(instancepath): # If instance doesn't exit
         with open(instancezippath, "wb+") as f:
