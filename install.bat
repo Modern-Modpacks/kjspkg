@@ -6,7 +6,7 @@ curl https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/run.bat > %lo
 curl https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/app.py > %localappdata%\Microsoft\WindowsApps\kjspkg.py
 
 curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/requirements.txt > kjspkgreqs.txt
-pip -q install -r kjspkgreqs.txt >nul 2>&1
+python -m pip -q install -r kjspkgreqs.txt >nul 2>&1
 del kjspkgreqs.txt
 
 msg "%username%" "KJSPKG install successful! Reload your terminal for the command to work"
