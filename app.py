@@ -543,7 +543,7 @@ def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddep
     makedirs("tmp", exist_ok=True) # Create a tempdir
     tmpdir = copytree(pkgpath, "tmp/test") # Copy the test package contents
     _move_pkg_contents("test", tmpdir) # Install
-    rmtree(tmpdir) # Remove the temp folder
+    rmtree(tmpdir, onerror=_dumbass_windows_path_error) # Remove the temp folder
 
     if not quiet: loadthread = _loading_thread("Running test instance...") # Loading anim
     try: run([LAUNCHERPATHS[launcher], "-l", instancename], stdout=DEVNULL, stderr=DEVNULL) # Run the instance
