@@ -8,7 +8,6 @@ from os import name as osname # Windows/linux
 from shutil import rmtree, move, copy, copytree # More file stuff
 from pathlib import Path # EVEN MORE FILE STUFF
 from tempfile import gettempdir # Get tmp dir of current os
-from psutil import process_iter # Get processes
 from subprocess import run, DEVNULL # Subprocesses
 from json import dump, load, dumps, loads # Json
 from multiprocessing import Process # Async threads
@@ -30,7 +29,10 @@ from fire import Fire # CLI tool
 from requests import get, post, exceptions # Requests
 from git import Repo, GitCommandNotFound, GitCommandError # Git cloning
 
+from psutil import process_iter # Get processes
+from flatten_json import flatten # Flatten dicts
 from toml import loads as tomlload # Read .tomls
+from esprima import parse, error_handler # Parse .js files
 
 # CONSTANTS
 VERSIONS = { # Version and version keys
@@ -92,9 +94,9 @@ kjspkgfile = {} # .kjspkg file
 
 # HELPER FUNCTIONS
 def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
-def _err(err:str): # Handle errors
+def _err(err:str, dontquit:bool=False): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
-    exit(1) # Quit
+    if not dontquit: exit(1) # Quit
 def _remove_prefix(pkgname:str) -> str: return pkgname.split(":")[-1] # Remove prefix
 def _format_github(pkgname:str) -> str: return _remove_prefix(pkgname).split('/')[-1].split("@")[0] # Remove github author and branch
 def _loading_anim(prefix:str=""): # Loading animation
@@ -618,9 +620,47 @@ def devdist(description:str=None, author:str=None, dependencies:list=None, incom
         repo.git.add(all=True) # Add
         repo.index.commit("Initial Commit") # Commit
         if not quiet: print(_bold("Git repository initialized (don't forget to add a license) ✓")) # Cool
-def devtest(): # Test for syntax errors
-    _err("Not yet implemented.")
-    
+def devtest(legacychecks:bool=True): # Test scripts for errors
+    if not path.exists(".kjspkg"): _err(".kjspkg not found") # Check for .kjspkg
+    manifest = load(open(".kjspkg")) # Load it
+    errors = False # No errors at first
+
+    for dir in SCRIPT_DIRS: # For each script dir
+        for dirpath, _, files in walk(dir): # For each nested file
+            for name in files:
+                if not name.endswith(".js"): continue # If the file is not a js file, skip
+                script = path.join(dirpath, name) # Get the path to the script
+
+                try: parsedscript = parse(open(script).read()).toDict() # Read it and parse it
+                except error_handler.Error as e: # If any errors come up during parsing
+                    errors = True # Set the errs to true
+                    _err(f"[{script}] {e.message}", True) # Show the error
+                    continue # Skip to the next script
+
+                for k, v in flatten(parsedscript).items(): # For each key in flattened tree
+                    if ("version" in manifest.keys() and manifest["version"]==9) or ("versions" in manifest.keys() and any([i>=9 for i in manifest["versions"]])): # If the version is 1.19+
+                        if legacychecks and k.endswith("_callee_name") and v in ("onEvent", "java"): # And the script uses onEvent/java (+legacy checks are on)
+                            errors = True # Set the errs to true
+                            _err(f"[{script}] You are using the {v} method, but your script is marked as KJS6+. Please use the compat layer (https://kjspkglookup.modernmodpacks.site/#kjspkg-compat-layer) or change your script according to the migration guide (https://wiki.latvian.dev/books/kubejs-legacy/page/migrating-to-kubejs-6).", True) # Show the legacy error
+                    else: # If the version is 1.18/1.16
+                        if legacychecks and k.endswith("_callee_object_name") and v in ( # And the script uses KJS6 event syntax (+legacy checks are on)
+                            "StartupEvents",
+                            "ServerEvents",
+                            "ClientEvents",
+                            "LevelEvents",
+                            "PlayerEvents",
+                            "EntityEvents",
+                            "BlockEvents",
+                            "ItemEvents",
+                            "NetworkEvents",
+                            "JEIEvents",
+                            "REIEvents"
+                        ):
+                            errors = True # Set the errs to true
+                            _err(f"[{script}] You are using the {v} class, but your script is marked as KJS legacy. Please use the compat layer (https://kjspkglookup.modernmodpacks.site/#kjspkg-compat-layer) or change your script according to the migration guide (https://wiki.latvian.dev/books/kubejs-legacy/page/migrating-to-kubejs-6).", True) # Show the legacy error
+
+    if not errors: print(_bold("No errors found ✓")) # If no errors were found, display this message
+
 # INFO COMMAND FUNCTIONS
 def info(): # Print the help page
     SPLASHES = [ # Splash list
@@ -686,7 +726,7 @@ Dev utils are experimental, use at your own risk.
 
 kjspkg dev run [--quiet] [--ignoremoddeps] [--launcher "<launcher>"] [--version "<version>"] [--modloader "<modloader>"] - runs your package in a test minecraft instance (requires MultiMC/Prism to be installed)
 kjspkg dev dist [--quiet] [--nogitrepository] [--description "<description>"] [--author "<author>"] [--dependencies "<dep1>,<dep2>"] [--incompatibilities "<incompat1>,<incompat2>"] [--versions "<version1>,<version2>"] [--modloaders "<forge>,<fabric>"] [--distdir "<directory>"] - creates a package from your kubejs folder
-kjspkg dev test - checks your code for syntax errors
+kjspkg dev test [--nolegacychecks] - checks your code for syntax errors
 
 kjspkg dev help - shows this message (default behavior)
     """
@@ -773,6 +813,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
             "package": devdist,
             "test": devtest,
             "check": devtest,
+            "validate": devtest,
             "help": devinfo,
             "info": devinfo
         }
