@@ -597,7 +597,7 @@ def devdist(description:str=None, author:str=None, dependencies:list=None, incom
         for dirpath, _, files in walk(dir): # For all files
             for name in files:
                 if name.startswith("kjspkg_"): # If the file starts with kjspkg_
-                    makedirs(path.join(distdir, dirpath)) # Create parents
+                    makedirs(path.join(distdir, dirpath), exist_ok=True) # Create parents
                     copy(path.join(dirpath, name), path.join(distdir, dirpath, name.removeprefix("kjspkg_"))) # Copy it
     
     # Write .kjspkg manifest
