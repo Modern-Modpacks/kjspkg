@@ -1,5 +1,6 @@
 {
     "kjspkg-compat-layer": "gcatkjspkgs/kjspkg-compat-layer",
+    "brainfuck-interpreter": "gcatkjspkgs/brainfuckJS",
 
     "trippers-titles": "gcatkjspkgs/trippers-titles",
     "thermalootjs": "gcatkjspkgs/thermalootjs",
