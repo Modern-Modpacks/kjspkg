@@ -581,6 +581,7 @@ def devdist(description:str=None, author:str=None, dependencies:list=None, incom
             versions = input(_bold("Enter the version keys for your package")+" (6/8/9, comma separated): ").replace(" ", "").split(",") # Ask for version
             for i in versions:
                 if not i.isnumeric or int(i) not in VERSIONS.values(): _err("Unknown version: "+i)
+            versions = [int(i) for i in versions]
         if modloaders==None:
             modloaders = input(_bold("Enter the modloaders for your package")+" (forge/fabric, comma separated): ").replace(" ", "").lower().split(",") # Ask for modloader
             for i in modloaders:
