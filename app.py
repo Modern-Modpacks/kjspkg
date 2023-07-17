@@ -568,7 +568,9 @@ def devdist(description:str=None, author:str=None, dependencies:list=None, incom
     if description==None: description = input(_bold("Input a description for your package: "))
     if author==None: author = input(_bold("Enter authors' names that worked on the package")+" (comma separated): ")
     if dependencies==None: dependencies = input(_bold("Enter dependency names for your package")+" (comma separated, optional): ").lower().replace(" ", "").split(",")
+    if dependencies==[""]: dependencies=[] # Set the deps to empty if the input is empty
     if incompatibilities==None: incompatibilities = input(_bold("Enter incompatibility names for your package")+" (comma separated, optional): ").lower().replace(" ", "").split(",")
+    if dependencies==[""]: dependencies=[] # Set the incompats to empty if the input is empty
 
     kjspkgfile = None
     if (versions==None or modloaders==None) and path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Load .kjspkg if exists
