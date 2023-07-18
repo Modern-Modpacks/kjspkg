@@ -98,7 +98,7 @@ def _err(err:str, dontquit:bool=False): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     if not dontquit: exit(1) # Quit
 def _remove_prefix(pkgname:str) -> str: return pkgname.split(":")[-1] # Remove prefix
-def _format_github(pkgname:str) -> str: return _remove_prefix(pkgname).split('/')[-1].split("@")[0] # Remove github author and branch
+def _format_github(pkgname:str) -> str: return _remove_prefix(pkgname).split('/')[-1].split("@")[0].split("$")[0] # Remove github author, path and branch
 def _loading_anim(prefix:str=""): # Loading animation
     loading = "⡆⠇⠋⠙⠸⢰⣠⣄" # Animation frames
     i = 0
@@ -207,11 +207,16 @@ def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
     if "@" in repo: # If the branch is specifed
         branch = repo.split("@")[-1] # Set the branch
         repo = repo.split("@")[0] # Remove the branch from the repo
+    path = "."
+    if "$" in repo: 
+        branch = repo.split("$")[-1] # Set the path
+        repo = repo.split("$")[0] # Remove the path from the repo
 
-    package = get(f"https://raw.githubusercontent.com/{repo}/{branch}/.kjspkg").json() # Get package info
+    package = get(f"https://raw.githubusercontent.com/{repo}/{branch}{'/'+path if path!='.' else ''}/.kjspkg").json() # Get package info
 
     package["repo"] = repo # Add the repo to info
     package["branch"] = branch # Add the branch to info
+    package["path"] = path # Add the path to info
 
     return package # Return the json object
 def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg (https://github.com/carbon-kjs)
@@ -245,11 +250,11 @@ def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
         "repo": pkg,
         "branch": "main" if "@" not in pkg else pkg.split("@")[-1]
     }
-def _move_pkg_contents(pkg:str, tmpdir:str): # Move the contents of the pkg to the .kjspkg folders
+def _move_pkg_contents(pkg:str, tmpdir:str, furtherpath:str): # Move the contents of the pkg to the .kjspkg folders
     licensefile = path.join(tmpdir, "LICENSE") 
     if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.txt")
     for dir in SCRIPT_DIRS: # Clone scripts & licenses into the main kjs folders
-        tmppkgpath = path.join(tmpdir, dir)
+        tmppkgpath = path.join(tmpdir, furtherpath, dir)
         finalpkgpath = path.join(dir, ".kjspkg", pkg)
         if path.exists(tmppkgpath):
             move(tmppkgpath, finalpkgpath) # Files
@@ -257,13 +262,14 @@ def _move_pkg_contents(pkg:str, tmpdir:str): # Move the contents of the pkg to t
 
     assetfiles = [] # Pkg's asset files
     for dir in ASSET_DIRS: # Clone assets
-        tmppkgpath = path.join(tmpdir, dir) # Get asset path
+        tmppkgpath = path.join(tmpdir, furtherpath, dir) # Get asset path
         if not path.exists(tmppkgpath): continue
 
         for dirpath, _, files in walk(tmppkgpath): # For each file in assets/data
             for name in files:
                 tmppath = path.join(dirpath, name)
-                finalpath = path.sep.join(tmppath.split(path.sep)[2:])
+                patharray = tmppath.split(path.sep)
+                finalpath = path.sep.join(patharray[patharray.index(dir):])
 
                 makedirs(path.sep.join(finalpath.split(path.sep)[:-1]), exist_ok=True) # Create parent dirs
                 move(tmppath, finalpath) # Move it to the permanent dir
@@ -312,10 +318,11 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, noreload:bo
     tmpdir = _create_tmp(pkg) # Create a temp dir
     try: Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir, branch=package["branch"]) # Install the repo into the tmp dir
     except GitCommandError: Repo.clone_from(f"https://github.com/{package['repo']}.git", tmpdir) # If the branch is not found, try to install from the default one
+    furtherpath = path.sep.join(package["path"].split("/")) # Set the furtherpath to the package path
 
     pkg = _format_github(pkg) # Remove github author and branch if present
 
-    _move_pkg_contents(pkg, tmpdir) # Move the contents of the pkg to the kubejs folder
+    _move_pkg_contents(pkg, tmpdir, furtherpath) # Move the contents of the pkg to the kubejs folder
 
     if not quiet:
         loadthread.terminate() # Kill the loading animation
@@ -544,7 +551,7 @@ def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddep
 
     makedirs("tmp", exist_ok=True) # Create a tempdir
     tmpdir = copytree(pkgpath, "tmp/test") # Copy the test package contents
-    _move_pkg_contents("test", tmpdir) # Install
+    _move_pkg_contents("test", tmpdir, ".") # Install
     rmtree(tmpdir, onerror=_dumbass_windows_path_error) # Remove the temp folder
 
     if not quiet: loadthread = _loading_thread("Running test instance...") # Loading anim

@@ -11,6 +11,9 @@
 
     "cutscenejs": "TheRealQuentin765/cutscenes-kubejs",
     "climate-compass": "TheRealQuentin765/climate-kubejs",
+
+    "boss-death-world-notification": "Mango-Minecraft-Project/Mango-KubeJScripts$src/World_Notification",
+    "create-delight": "Mango-Minecraft-Project/Mango-KubeJScripts$src/Create_Delight",
     
     "playeranimator-kubejs": "squoshi/playeranimator-kubejs",
     "gregicsifting": "Drackion/GregicSifting",

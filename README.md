@@ -77,8 +77,10 @@ kjspkg help
 
 4. Fork this repo
 5. Clone it
-6. Add your package to `pkgs.json` file. Format it like this: `"your_package_id": "your_github_name/your_repo_name",`
-    * You can specify the branch by adding `@branch_name` at the end of the string, otherwise it will automatically use the `main` branch
+6. Add your package to `pkgs.json` file. Format it like this: `"your_package_id": "your_github_name/your_repo_name[$path/to/your/package/directory][@branch_name]",`
+    * Things in [] are optional
+    * Only specify the path if you have multiple packages in one repository. If you do, specify the path where the .kjspkg file is located at
+    * Branch is `main` by default
 7. Create a pull request
 8. Wait for it to be accepted
 
