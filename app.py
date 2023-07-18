@@ -209,7 +209,7 @@ def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
         repo = repo.split("@")[0] # Remove the branch from the repo
     path = "."
     if "$" in repo: 
-        branch = repo.split("$")[-1] # Set the path
+        path = repo.split("$")[-1] # Set the path
         repo = repo.split("$")[0] # Remove the path from the repo
 
     package = get(f"https://raw.githubusercontent.com/{repo}/{branch}{'/'+path if path!='.' else ''}/.kjspkg").json() # Get package info
@@ -251,8 +251,11 @@ def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
         "branch": "main" if "@" not in pkg else pkg.split("@")[-1]
     }
 def _move_pkg_contents(pkg:str, tmpdir:str, furtherpath:str): # Move the contents of the pkg to the .kjspkg folders
+    # Find the license
     licensefile = path.join(tmpdir, "LICENSE") 
     if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.txt")
+    if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.md")
+
     for dir in SCRIPT_DIRS: # Clone scripts & licenses into the main kjs folders
         tmppkgpath = path.join(tmpdir, furtherpath, dir)
         finalpkgpath = path.join(dir, ".kjspkg", pkg)
