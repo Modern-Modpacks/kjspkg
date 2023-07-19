@@ -219,23 +219,27 @@ def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
     package["path"] = path # Add the path to info
 
     return package # Return the json object
-def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg (https://github.com/carbon-kjs)
-    request = get(f"https://raw.githubusercontent.com/carbon-kjs/{pkg}/main/carbon.config.json") # Request info about the package
-    if request.status_code==404: return # Return nothing if the pkg doesn't exist
+def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg (https://github.com/malezjaa/carbonjs)
+    allpackages = get("https://carbon.beanstech.tech/api/packages").json() # Get all packages
+    allpackages = [i for i in allpackages if i["name"]==pkg.lower()] # Find the package with the name provided
+    if len(allpackages)==0: return # If not found, return nothing
 
-    json = request.json() # Get info in json
+    repository = allpackages[0]['repository'].replace('https://github.com/', '') # Format the repository
+    branch = get(f"https://api.github.com/repos/{repository}").json()["default_branch"] # Get the default branch
+    info = get(f"https://raw.githubusercontent.com/{repository}/{branch}/carbon.config.json").json() # Request info about the package
 
     return { # Return formatted info
-        "author": json["author"],
-        "description": json["description"],
+        "author": info["author"],
+        "description": info["description"],
         
-        "versions": [VERSIONS[json["minecraftVersion"]]],
-        "modloaders": json["modloaders"],
+        "versions": list(dict.fromkeys([VERSIONS[i] for i in info["minecraftVersion"]])),
+        "modloaders": info["modloaders"],
         "dependencies": [],
         "incompatibilities": [],
 
-        "repo": f"carbon-kjs/{pkg}",
-        "branch": "main"
+        "repo": repository,
+        "branch": branch,
+        "path": "."
     }
 def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
     return {
@@ -368,7 +372,7 @@ def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=Fal
         
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
     for pkg in pkgs:
-        pkg = pkg.lower()
+        pkg = _remove_prefix(pkg.lower())
         _remove_pkg(pkg, skipmissing)
         if not quiet: print(_bold(f"Package \"{pkg}\" removed succesfully! ✓"))
 def update(*pkgs:str, **kwargs): # Update pkgs
@@ -417,7 +421,7 @@ def listall(*, count:bool=False, search:str="", reload:bool=True, carbon:bool=Fa
     if not carbon:
         if reload: _reload_pkgs() # Reload pkgs
         allpkgs = list(_pkgs_json().keys()) # All package names
-    else: allpkgs = [i["name"] for i in get("https://api.github.com/orgs/carbon-kjs/repos").json()]
+    else: allpkgs = [i["name"] for i in get("https://carbon.beanstech.tech/api/packages").json()]
 
     if count: # If count is true
         print(len(allpkgs)) # Print the pkg count
