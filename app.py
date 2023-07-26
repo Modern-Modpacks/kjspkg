@@ -575,33 +575,34 @@ def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddep
 
     chdir(pkgpath) # Change the cwd back to the package dir
     if not quiet: print(_bold("Test instance killed ✓")) # 👍
-def devdist(description:str=None, author:str=None, dependencies:list=None, incompatibilities:list=None, versions:list=None, modloaders:list=None, distdir:str="dist", gitrepository:bool=True, quiet:bool=False): # Package the scripts automatically
+def devdist(description:str=None, author:str=None, dependencies:list=None, incompatibilities:list=None, versions:list=None, modloaders:list=None, distdir:str="dist", gitrepository:bool=True, generatemanifest:bool=True, quiet:bool=False): # Package the scripts automatically
     if not _check_project(): _err("Current directory does not look like a KubeJS one...") # Check if the cwd is a kubejs one
 
     # Inputs
-    if description==None: description = input(_bold("Input a description for your package: "))
-    if author==None: author = input(_bold("Enter authors' names that worked on the package")+" (comma separated): ")
-    if dependencies==None: dependencies = input(_bold("Enter dependency names for your package")+" (comma separated, optional): ").lower().replace(" ", "").split(",")
-    if dependencies==[""]: dependencies=[] # Set the deps to empty if the input is empty
-    if incompatibilities==None: incompatibilities = input(_bold("Enter incompatibility names for your package")+" (comma separated, optional): ").lower().replace(" ", "").split(",")
-    if dependencies==[""]: dependencies=[] # Set the incompats to empty if the input is empty
+    if generatemanifest:
+        if description==None: description = input(_bold("Input a description for your package: "))
+        if author==None: author = input(_bold("Enter authors' names that worked on the package")+" (comma separated): ")
+        if dependencies==None: dependencies = input(_bold("Enter dependency names for your package")+" (comma separated, optional): ").lower().replace(" ", "").split(",")
+        if dependencies==[""]: dependencies=[] # Set the deps to empty if the input is empty
+        if incompatibilities==None: incompatibilities = input(_bold("Enter incompatibility names for your package")+" (comma separated, optional): ").lower().replace(" ", "").split(",")
+        if dependencies==[""]: dependencies=[] # Set the incompats to empty if the input is empty
 
-    kjspkgfile = None
-    if (versions==None or modloaders==None) and path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Load .kjspkg if exists
+        kjspkgfile = None
+        if (versions==None or modloaders==None) and path.exists(".kjspkg"): kjspkgfile = load(open(".kjspkg")) # Load .kjspkg if exists
 
-    if kjspkgfile!=None: # Extract the version number and modloader from .kjspkg
-        if versions==None: versions = (kjspkgfile["version"],)
-        if modloaders==None: modloaders = (kjspkgfile["modloader"],)
-    else: # If .kjspkg is not found
-        if versions==None:
-            versions = input(_bold("Enter the version keys for your package")+" (6/8/9, comma separated): ").replace(" ", "").split(",") # Ask for version
-            for i in versions:
-                if not i.isnumeric or int(i) not in VERSIONS.values(): _err("Unknown version: "+i)
-            versions = [int(i) for i in versions]
-        if modloaders==None:
-            modloaders = input(_bold("Enter the modloaders for your package")+" (forge/fabric, comma separated): ").replace(" ", "").lower().split(",") # Ask for modloader
-            for i in modloaders:
-                if i not in ("forge", "fabric"): _err("Unknown modloader: "+i)
+        if kjspkgfile!=None: # Extract the version number and modloader from .kjspkg
+            if versions==None: versions = (kjspkgfile["version"],)
+            if modloaders==None: modloaders = (kjspkgfile["modloader"],)
+        else: # If .kjspkg is not found
+            if versions==None:
+                versions = input(_bold("Enter the version keys for your package")+" (6/8/9, comma separated): ").replace(" ", "").split(",") # Ask for version
+                for i in versions:
+                    if not i.isnumeric or int(i) not in VERSIONS.values(): _err("Unknown version: "+i)
+                versions = [int(i) for i in versions]
+            if modloaders==None:
+                modloaders = input(_bold("Enter the modloaders for your package")+" (forge/fabric, comma separated): ").replace(" ", "").lower().split(",") # Ask for modloader
+                for i in modloaders:
+                    if i not in ("forge", "fabric"): _err("Unknown modloader: "+i)
 
     # Confirmations
     if not quiet: input(_bold("Only scripts and assets that start with `kjspkg_` will be added (prefix removed). Press enter to confirm "))
@@ -618,16 +619,17 @@ def devdist(description:str=None, author:str=None, dependencies:list=None, incom
                     copy(path.join(dirpath, name), path.join(distdir, dirpath, name.removeprefix("kjspkg_"))) # Copy it
     
     # Write .kjspkg manifest
-    with open(path.join(distdir, ".kjspkg"), "w+") as f:
-        dump({
-            "author": author,
-            "description": description,
-            
-            "versions": versions,
-            "modloaders": modloaders,
-            "dependencies": dependencies,
-            "incompatibilities": incompatibilities
-        }, f)
+    if generatemanifest:
+        with open(path.join(distdir, ".kjspkg"), "w+") as f:
+            dump({
+                "author": author,
+                "description": description,
+                
+                "versions": versions,
+                "modloaders": modloaders,
+                "dependencies": dependencies,
+                "incompatibilities": incompatibilities
+            }, f)
 
     if not quiet: print(_bold("Package generated ✓")) # Woo
 
@@ -742,7 +744,7 @@ def devinfo(): # Print info about the dev commands
 Dev utils are experimental, use at your own risk.
 
 kjspkg dev run [--quiet] [--ignoremoddeps] [--launcher "<launcher>"] [--version "<version>"] [--modloader "<modloader>"] - runs your package in a test minecraft instance (requires MultiMC/Prism to be installed)
-kjspkg dev dist [--quiet] [--nogitrepository] [--description "<description>"] [--author "<author>"] [--dependencies "<dep1>,<dep2>"] [--incompatibilities "<incompat1>,<incompat2>"] [--versions "<version1>,<version2>"] [--modloaders "<forge>,<fabric>"] [--distdir "<directory>"] - creates a package from your kubejs folder
+kjspkg dev dist [--quiet] [--nogitrepository] [--nogeneratemanifest] [--description "<description>"] [--author "<author>"] [--dependencies "<dep1>,<dep2>"] [--incompatibilities "<incompat1>,<incompat2>"] [--versions "<version1>,<version2>"] [--modloaders "<forge>,<fabric>"] [--distdir "<directory>"] - creates a package from your kubejs folder
 kjspkg dev test [--nolegacychecks] - checks your code for syntax errors
 
 kjspkg dev help - shows this message (default behavior)
