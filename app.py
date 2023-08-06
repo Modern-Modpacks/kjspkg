@@ -547,6 +547,8 @@ def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddep
     chdir(path.join(instancepath, ".minecraft", "kubejs")) # Change the cwd to the instance
     kjspkgfile = load(open(".kjspkg")) # Load the .kjspkg file
 
+    if path.exists("tmp"): rmtree("tmp", onerror=_dumbass_windows_path_error) # Remove the temp folder if exists
+
     # Install deps
     if "dependencies" in manifest.keys():
         modids = _get_modids() # Get mod ids
