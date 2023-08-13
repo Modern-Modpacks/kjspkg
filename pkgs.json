@@ -30,6 +30,7 @@
 
     "create-manual": "gcatkjspkgs/create-manual",
     "torch-by-pickaxe": "gcatkjspkgs/torch-by-pickaxe",
+    "update-notifier": "KostromDan/Update-Notifier",
 
     "leonariz-utils": "gcatkjspkgs/leonarizs-pkgs@utilities",
     "curios-registry": "gcatkjspkgs/leonarizs-pkgs@curios",
