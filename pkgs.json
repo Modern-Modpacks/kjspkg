@@ -17,7 +17,6 @@
     "boss-death-world-notification": "Mango-Minecraft-Project/Mango-KubeJScripts$scripts/World_Notification",
     "create-delight": "Mango-Minecraft-Project/Mango-KubeJScripts$scripts/Create_Delight",
     
-    "playeranimator-kubejs": "squoshi/playeranimator-kubejs",
     "gregicsifting": "Drackion/GregicSifting",
     "cauldron-hand-washing": "V972/CauldronHandWashing",
 
@@ -35,8 +34,11 @@
     "curios-registry": "gcatkjspkgs/leonarizs-pkgs@curios",
     "replant-wheat-seeds": "gcatkjspkgs/leonarizs-pkgs@wheat",
 
+    "playeranimator-kubejs": "squoshi/playeranimator-kubejs",
     "entropy-manipulator-create-depot": "gcatkjspkgs/entropy-manipulator-create-depot",
     "hardcore-air-supply": "gcatkjspkgs/hardcore-air-supply",
+    "lodestone-js": "gcatkjspkgs/lodestone-library",
+    "lodestone-screenshake": "gcatkjspkgs/lodestone-screenshake",
 
     "create-external-sequenced-assembly": "gcatkjspkgs/create-external-sequenced-assembly",
     "create-addition-delight-compat": "Rimevel/createaddition_delight_compat",
