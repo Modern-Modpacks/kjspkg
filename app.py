@@ -154,7 +154,7 @@ def _get_modid(modpath:str) -> str: # Get mod id from a mod file
     modfile = ZipFile(path.join(getcwd(), "..", "mods", modpath))
 
     try:
-        if kjspkgfile["modloader"]=="forge": return tomlload(modfile.open(path.join("META-INF", "mods.toml")).read().decode("utf-8"))["mods"][0]["modId"]
+        if kjspkgfile["modloader"]=="forge": return tomlload(modfile.open("META-INF/mods.toml").read().decode("utf-8"))["mods"][0]["modId"]
         else: return loads(modfile.open(modfile.open("fabric.mod.json").read().decode("utf-8")))["id"]
     except KeyError: return # Check for wierd mods with no mods.toml/fabric.mod.json
 def _get_modids() -> list: # Get all mod ids
