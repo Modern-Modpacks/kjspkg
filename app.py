@@ -48,7 +48,11 @@ VERSIONS = { # Version and version keys
     "1.19.2": 9,
     "1.19.3": 9,
     "1.19.4": 9,
-    "1.19": 9
+    "1.19": 9,
+
+    "1.20.1": 10,
+    "1.20.2": 10,
+    "1.20": 10
 }
 SCRIPT_DIRS = ("server_scripts", "client_scripts", "startup_scripts") # Script directories
 ASSET_DIRS = ("data", "assets") # Asset directories
@@ -94,6 +98,7 @@ kjspkgfile = {} # .kjspkg file
 
 # HELPER FUNCTIONS
 def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
+def _textbg(s:str) -> str: return "\u001b[47m\u001b[30m"+s+"\u001b[0m" # Make the text black and have white background
 def _err(err:str, dontquit:bool=False): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     if not dontquit: exit(1) # Quit
@@ -177,7 +182,7 @@ def _pkgs_json() -> dict: # Get the pkgs.json file
     if not path.exists(pkgspath): _reload_pkgs()
     return load(open(pkgspath))
 
-def _pkg_info(pkg:str, getlicense:bool=False, refresh:bool=True) -> dict: # Get info about the pkg
+def _pkg_info(pkg:str, ghinfo:bool=True, refresh:bool=True) -> dict: # Get info about the pkg
     if refresh: _reload_pkgs() # Refresh pkgs
 
     prefix = pkg.split(":")[0] if len(pkg.split(":"))>1 else "kjspkg" # kjspkg: - default prefix
@@ -192,10 +197,10 @@ def _pkg_info(pkg:str, getlicense:bool=False, refresh:bool=True) -> dict: # Get 
     #     exit()
     else: _err("Unknown prefix: "+_bold(prefix))
 
-    if info and getlicense: # If the license is requested
-        pkglicense = get(f"https://api.github.com/repos/{info['repo']}/license?ref={info['branch']}") # Get license
-        if pkglicense.status_code!=403: info["license"] = pkglicense.json()["license"]["spdx_id"] if pkglicense.status_code!=404 else "All Rights Reserved" # Add the license to info
-        if ("license" not in info.keys() or info["license"]=="NOASSERTION"): info["license"] = f"Other ({pkglicense.json()['html_url'] if pkglicense.status_code!=403 else 'https://github.com/Modern-Modpacks/kjspkg/blob/'+info['branch']+'/LICENSE'})" # Custom licenses or api rate exceeded
+    # Get github repo info if requested
+    if ghinfo:
+        req = get(f"https://api.github.com/repos/{info['repo']}?ref={info['branch']}", headers=({"Authorization": "Bearer "+getenv("GITHUB_API_KEY")} if getenv("GITHUB_API_KEY") else {}))
+        if req.status_code==200: info["ghdata"] = req.json()
 
     return info
 def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
@@ -283,19 +288,19 @@ def _move_pkg_contents(pkg:str, tmpdir:str, furtherpath:str): # Move the content
                 assetfiles.append(finalpath) # Add it to assetfiles
     
     kjspkgfile["installed"][pkg] = assetfiles # Add the pkg to installed
-def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, noreload:bool): # Install the pkg
+def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool): # Install the pkg
     if not update and _format_github(pkg) in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
         if pkg=="*": # If updating all packages
-            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing, noreload) # Update all packages
+            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing, reload) # Update all packages
             return
 
         _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
 
-    package = _pkg_info(pkg) # Get pkg
+    package = _pkg_info(pkg, False, reload) # Get pkg
     if not package and reload: 
         _reload_pkgs() # Reload if not found
-        package = _pkg_info(pkg) # Try to get the pkg again
+        package = _pkg_info(pkg, False, reload) # Try to get the pkg again
 
     if not package: # If pkg doesn't exist after reload
         if not skipmissing: _err(f"Package \"{pkg}\" does not exist") # Err
@@ -314,7 +319,7 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, noreload:bo
     if "dependencies" in package.keys():
         for dep in package["dependencies"]: 
             if dep.lower().startswith("mod:") and _remove_prefix(dep.lower()) not in modids: _err(f"Mod \"{_remove_prefix(dep.replace('_', ' ').replace('-', ' ')).title()}\" not found.") # Check for mod dependency
-            elif not dep.lower().startswith("mod:"): _install_pkg(dep.lower(), dep.lower() in kjspkgfile["installed"], quiet, skipmissing, noreload) # Install/update package dependency
+            elif not dep.lower().startswith("mod:"): _install_pkg(dep.lower(), dep.lower() in kjspkgfile["installed"], quiet, skipmissing, reload) # Install/update package dependency
     if "incompatibilities" in package.keys(): 
         for i in package["incompatibilities"]:
             if i.lower().startswith("mod:") and _remove_prefix(i.lower()) in modids: _err(f"Incompatible mod: "+_remove_prefix(i.replace('_', ' ').replace('-', ' ')).title()) # Check for mod incompats
@@ -389,10 +394,10 @@ def listpkgs(*, count:bool=False): # List pkgs
         return
 
     print("\n".join(kjspkgfile["installed"].keys())) # Print the list
-def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
+def pkginfo(pkg:str, *, script:bool=False, githubinfo:bool=True): # Print info about a pkg
     if(pkg.startswith("github:")): _err(f"Can't show info about an external package \"{_format_github(pkg)}\"") # Err if pkg is external
 
-    info = _pkg_info(pkg, True) # Get the info
+    info = _pkg_info(pkg, githubinfo, True) # Get the info
     if not info: _err(f"Package {pkg} not found") # Err if pkg not found
 
     # Print it (scripty)
@@ -405,18 +410,21 @@ def pkginfo(pkg:str, *, script:bool=False): # Print info about a pkg
 {_bold(_remove_prefix(pkg).replace("-", " ").title())} by {_bold(info["author"])}
 
 {info["description"]}
-
+{
+    NL+_bold("KJSPKG Lookup")+": https://kjspkglookup.modernmodpacks.site/#"+pkg+NL if ":" not in pkg or pkg.split(":")[0]=="kjspkg" else ""
+}
 {_bold("Dependencies")}: {", ".join([_remove_prefix(i).title().replace("-", " ").replace("_", " ")+(" ("+i.split(":")[0].title()+")" if ":" in i else "") for i in info["dependencies"]]) if "dependencies" in info.keys() and len(info["dependencies"])>0 else "*nothing here*"}
 {_bold("Incompatibilities")}: {", ".join([_remove_prefix(i).title().replace("-", " ").replace("_", " ")+(" ("+i.split(":")[0].title()+")" if ":" in i else "") for i in info["incompatibilities"]]) if "incompatibilities" in info.keys() and len(info["incompatibilities"])>0 else "*compatible with everything!*"}
 
-{_bold("License")}: {info["license"]}
-{_bold("GitHub")}: https://github.com/{info["repo"]}/tree/{info["branch"]}
-
 {_bold("Versions")}: {", ".join([f"1.{10+i}" for i in info["versions"]])}
 {_bold("Modloaders")}: {", ".join([i.title() for i in info["modloaders"]])}
-{
-    NL+_bold("KJSPKG Lookup")+": https://kjspkglookup.modernmodpacks.site/#"+pkg+NL if ":" not in pkg or pkg.split(":")[0]=="kjspkg" else ""
-}""")
+
+{_bold("GitHub")}: https://github.com/{info["repo"]}/tree/{info["branch"]}"""+
+(f"""
+{_bold('License')}: {info['ghdata']['license']['key'].upper() if info['ghdata']['license']!=None else 'ARR'}
+
+{_textbg(f" 👁️  {info['ghdata']['watchers_count']} ")} {_textbg(f" 🍴 {info['ghdata']['forks_count']} ")} {_textbg(f" ⭐ {info['ghdata']['stargazers_count']} ")}
+""" if "ghdata" in info else "\n"))
 def listall(*, count:bool=False, search:str="", reload:bool=True, carbon:bool=False): # List all pkgs
     if not carbon:
         if reload: _reload_pkgs() # Reload pkgs
@@ -462,13 +470,16 @@ def init(*, quiet:bool=False, override:bool=False, cancreate:str=None, **configa
         else: exit(0)
 
     # Ask for missing params
-    if "version" not in configargs.keys(): configargs["version"] = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19): ")) # Version
+    if "version" not in configargs.keys(): configargs["version"] = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19/1.20): ")) # Version
     if configargs["version"] not in VERSIONS.keys(): _err("Unknown or unsupported version: "+str(configargs["version"]))
     configargs["version"] = VERSIONS[configargs["version"]]
 
-    if "modloader" not in configargs.keys(): configargs["modloader"] = input(_bold("Input your modloader (forge/fabric/quilt): ")) # Modloader
+    if "modloader" not in configargs.keys(): configargs["modloader"] = input(_bold("Input your modloader (forge/neoforge/fabric/quilt): ")) # Modloader
     configargs["modloader"] = configargs["modloader"].lower()
-    if configargs["modloader"] not in ("forge", "fabric", "quilt"): _err("Unknown or unsupported modloader: "+configargs["modloader"].title())
+    if configargs["modloader"] not in ("forge", "neoforge", "fabric", "quilt"): _err("Unknown or unsupported modloader: "+configargs["modloader"].title())
+
+    if configargs["modloader"] in ("forge", "neoforge"): configargs["modloader"] = "forge"
+    elif configargs["modloader"] in ("fabric", "quilt"): configargs["modloader"] = "fabric"
 
     _create_project_directories() # Create .kjspkg directories
     if configargs["version"]==6: _enable_reflection() # Enable reflection in the config for 1.16.5
@@ -479,7 +490,10 @@ def init(*, quiet:bool=False, override:bool=False, cancreate:str=None, **configa
     with open(".kjspkg", "w+") as f: dump(kjspkgfile, f) # Create .kjspkg file
     if not quiet: print(_bold("Project created!")) # Woo!
 def uninit(*, confirm:bool=False): # Remove the project
-    if confirm or input("\u001b[31;1mDOING THIS WILL REMOVE ALL PACKAGES AND UNINSTALL KJSPKG COMPLETELY, ARE YOU SURE YOU WANT TO PROCEED? (y/N): \u001b[0m").lower()=="y": _delete_project() 
+    if confirm or input("\u001b[31;1mDOING THIS WILL REMOVE ALL PACKAGES AND UNINSTALL KJSPKG COMPLETELY, ARE YOU SURE YOU WANT TO PROCEED? (y/N): \u001b[0m").lower()=="y": 
+        _delete_project()
+        print("\u001b[31;1mProject deleted\u001b[0m")
+    else: print(_bold("Aborted."))
 
 # DEV COMMAND FUNCTIONS
 def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddeps:bool=False, quiet:bool=False): # Run a test instance
@@ -556,7 +570,7 @@ def devrun(launcher:str=None, version:int=None, modloader:str=None, ignoremoddep
             if dep.startswith("mod:") and _remove_prefix(dep.lower()) not in modids: # If a mod dep is not found
                 if ignoremoddeps and not quiet: print(_bold(f"!!! Mod `{_remove_prefix(dep)}` is not installed, but it's ignored since ignoremoddeps is specified.")) # Warn if ignoremoddeps is true
                 else: _err(f"Your package depends on `{_remove_prefix(dep)}`, which is not installed.") # Or err if it's false
-            elif not dep.startswith("mod:"): _install_pkg(dep, False, True, True, False) # Install package deps
+            elif not dep.startswith("mod:"): _install_pkg(dep, False, True, True, True) # Install package deps
 
     makedirs("tmp", exist_ok=True) # Create a tempdir
     tmpdir = copytree(pkgpath, "tmp/test") # Copy the test package contents
@@ -597,7 +611,7 @@ def devdist(description:str=None, author:str=None, dependencies:list=None, incom
             if modloaders==None: modloaders = (kjspkgfile["modloader"],)
         else: # If .kjspkg is not found
             if versions==None:
-                versions = input(_bold("Enter the version keys for your package")+" (6/8/9, comma separated): ").replace(" ", "").split(",") # Ask for version
+                versions = input(_bold("Enter the version keys for your package")+" (6/8/9/10, comma separated): ").replace(" ", "").split(",") # Ask for version
                 for i in versions:
                     if not i.isnumeric or int(i) not in VERSIONS.values(): _err("Unknown version: "+i)
                 versions = [int(i) for i in versions]
@@ -718,7 +732,7 @@ kjspkg install carbon:[pkgname] - installs packages from carbonjs' repo (https:/
 kjspkg install github:[author]/[name] - installs external packages from github
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
-kjspkg pkg [package] [--script] - shows info about the package
+kjspkg pkg [package] [--script] [--nogithubinfo] - shows info about the package
 kjspkg listall/all [--count] [--search "<query>"] [--noreload] - lists all packages
 kjspkg search [query] - searches for packages with a similar name
 kjspkg reload/refresh - reloads the cached package registry

@@ -68,7 +68,7 @@ kjspkg help
         "author": "<your_name>",
         "description": "<description>",
         
-        "versions": [<Version key numbers (see the numbers in parentheses in the table below). Can contain multiple numbers>],
+        "versions": [<Version key numbers (see the numbers in parentheses in the table below, or use this formula: "version title = 1.(version key + 10).whatever"). Can contain multiple numbers>],
         "modloaders": [<Modloaders ("fabric"/"forge", "fabric" will for quilt as well)>. Can contain multiple modloaders],
         "dependencies": [<Package names that your package depends on, blank if none. To depend on mods add "mod:" before the mod id>],
         "incompatibilities": [<Package names that your package is incompatible with, blank if none. Incompatible mods are also supported (use the same syntax)>]
@@ -96,6 +96,7 @@ kjspkg help
 
 | |Forge|Fabric/Quilt|
 |-|-----|------------|
+|1.20 (10)|![nottested_partial](https://img.shields.io/badge/Not%20Tested-Partial%20Support-green)|![nottested_partial](https://img.shields.io/badge/Not%20Tested-Partial%20Support-green)|
 |1.19 (9)|![tested_partial](https://img.shields.io/badge/Tested-Partial%20Support-green)|![nottested_partial](https://img.shields.io/badge/Tested-Partial%20Support-green)|
 |1.18 (8)|![nottested_partial](https://img.shields.io/badge/Tested-Partial%20Support-green)|![nottested_partial](https://img.shields.io/badge/Not%20Tested-Partial%20Support-green)|
 |1.16 (6)|![tested_full](https://img.shields.io/badge/Tested-Full%20Support-brightgreen)|![nottested_partial](https://img.shields.io/badge/Not%20tested-Partial%20Support-green)|
