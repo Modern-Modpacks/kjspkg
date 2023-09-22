@@ -712,7 +712,8 @@ def info(): # Print the help page
         "`amogus` is a real package!",
         "Supports 1.12!",
         "Procrastinating doing one project by doing another project, genius!",
-        "Also try Magna!"
+        "Also try Magna!",
+        "No alternative for CraftTweaker!"
     ]
 
     # Info string
