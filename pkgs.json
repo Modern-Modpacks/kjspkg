@@ -55,5 +55,7 @@
     "mekanism-custom-infused-type": "gcatkjspkgs/mekanism-custom-infused-type@1.18",
     "extended-days": "gcatkjspkgs/extended-days",
 	
-	"grindstonerepairjs": "beckadamtheinventor/GrindstoneRepairJS"
+	"grindstonerepairjs": "beckadamtheinventor/GrindstoneRepairJS",
+
+    "kjs-datagen-scripts": "FooterMan15/KJS-Datagen-Scripts"
 }
