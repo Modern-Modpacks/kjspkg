@@ -19,6 +19,7 @@
     
     "gregicsifting": "Drackion/GregicSifting",
     "cauldron-hand-washing": "V972/CauldronHandWashing",
+    "gravescroll": "Liopyu/GraveScroll",
 
     "entity-snip-snip": "gcatkjspkgs/entity-snip-snip",
     "not-neat": "gcatkjspkgs/not-neat",
@@ -52,5 +53,10 @@
 
     "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
     "mekanism-custom-infused-type": "gcatkjspkgs/mekanism-custom-infused-type@1.18",
-    "extended-days": "gcatkjspkgs/extended-days"
+    "extended-days": "gcatkjspkgs/extended-days",
+	
+	"grindstonerepairjs": "beckadamtheinventor/GrindstoneRepairJS",
+
+    "kjs-datagen-scripts": "FooterMan15/KJS-Datagen-Scripts",
+    "kubejs-lootbags": "Kisuny/KubeJS-lootbags"
 }
