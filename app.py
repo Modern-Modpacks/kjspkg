@@ -289,7 +289,9 @@ def _move_pkg_contents(pkg:str, tmpdir:str, furtherpath:str): # Move the content
     
     kjspkgfile["installed"][pkg] = assetfiles # Add the pkg to installed
 def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool, *, _depmode:bool=False): # Install the pkg
-    if not update and _format_github(pkg) in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
+    if not update and _format_github(pkg) in kjspkgfile["installed"]:  # If the pkg is already installed and the update parameter is false, notify the user and just return
+        if not quiet: print(_bold(f"Package \"{pkg}\" already installed ✓"))
+        return
     if update: 
         if pkg=="*": # If updating all packages
             for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing, reload, _depmode=True) # Update all packages
