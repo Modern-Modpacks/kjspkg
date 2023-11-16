@@ -288,11 +288,11 @@ def _move_pkg_contents(pkg:str, tmpdir:str, furtherpath:str): # Move the content
                 assetfiles.append(finalpath) # Add it to assetfiles
     
     kjspkgfile["installed"][pkg] = assetfiles # Add the pkg to installed
-def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool): # Install the pkg
+def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool, *, _depmode:bool=False): # Install the pkg
     if not update and _format_github(pkg) in kjspkgfile["installed"]: return # If the pkg is already installed and the update parameter is false, do nothing
     if update: 
         if pkg=="*": # If updating all packages
-            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing, reload) # Update all packages
+            for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing, reload, _depmode=True) # Update all packages
             return
 
         _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
@@ -309,6 +309,7 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool
     pkg = _remove_prefix(pkg) # Remove pkg prefix
 
     # Unsupported version/modloader errs
+    if _depmode and (kjspkgfile["version"] not in package["versions"] or kjspkgfile["modloader"] not in package["modloaders"]): return
     if kjspkgfile["version"] not in package["versions"]: _err(f"Unsupported version 1.{10+kjspkgfile['version']} for package \"{pkg}\"")
     if kjspkgfile["modloader"] not in package["modloaders"]: _err(f"Unsupported modloader \"{kjspkgfile['modloader'].title()}\" for package \"{pkg}\"")
 
