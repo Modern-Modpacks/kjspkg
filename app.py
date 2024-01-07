@@ -26,7 +26,7 @@ from random import choice # Random splash
 # External libraries
 from fire import Fire # CLI tool
 
-from requests import get, post, exceptions # Requests
+from requests import get, put, exceptions # Requests
 from git import Repo, GitCommandNotFound, GitCommandError # Git cloning
 
 from psutil import process_iter # Get processes
@@ -198,7 +198,7 @@ def _pkg_info(pkg:str, ghinfo:bool=True, refresh:bool=True) -> dict: # Get info 
     else: _err("Unknown prefix: "+_bold(prefix))
 
     # Get github repo info if requested
-    if ghinfo:
+    if info!=None and ghinfo:
         req = get(f"https://api.github.com/repos/{info['repo']}?ref={info['branch']}", headers=({"Authorization": "Bearer "+getenv("GITHUB_API_KEY")} if getenv("GITHUB_API_KEY") else {}))
         if req.status_code==200: info["ghdata"] = req.json()
 
@@ -338,6 +338,7 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool
     pkg = _format_github(pkg) # Remove github author and branch if present
 
     _move_pkg_contents(pkg, tmpdir, furtherpath) # Move the contents of the pkg to the kubejs folder
+    put(f"https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=downloads&id={pkg}") # Add 1 to the download counter on tizu's backend
 
     if not quiet:
         loadthread.terminate() # Kill the loading animation
@@ -403,6 +404,15 @@ def pkginfo(pkg:str, *, script:bool=False, githubinfo:bool=True): # Print info a
     info = _pkg_info(pkg, githubinfo, True) # Get the info
     if not info: _err(f"Package {pkg} not found") # Err if pkg not found
 
+    # Tizu lookup view/download data
+    downloaddata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=downloads")
+    viewdata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=downloads")
+    if viewdata.status_code==200:
+        info["lookupapi"] = {
+            "downloads": downloaddata.json()[pkg] if pkg in downloaddata.json().keys() else 0,
+            "views": viewdata.json()[pkg] if pkg in viewdata.json().keys() else 0
+        }
+
     # Print it (scripty)
     if script:
         print(dumps(info))
@@ -415,7 +425,9 @@ def pkginfo(pkg:str, *, script:bool=False, githubinfo:bool=True): # Print info a
 {info["description"]}
 {
     NL+_bold("KJSPKG Lookup")+": https://kjspkglookup.modernmodpacks.site/#"+pkg+NL if ":" not in pkg or pkg.split(":")[0]=="kjspkg" else ""
-}
+}"""+(f"""{_bold("Downloads")}: {info['lookupapi']['downloads']}
+{_bold("Views")}: {info['lookupapi']['views']}
+""" if "lookupapi" in info.keys() else "\n")+f"""
 {_bold("Dependencies")}: {", ".join([_remove_prefix(i).title().replace("-", " ").replace("_", " ")+(" ("+i.split(":")[0].title()+")" if ":" in i else "") for i in info["dependencies"]]) if "dependencies" in info.keys() and len(info["dependencies"])>0 else "*nothing here*"}
 {_bold("Incompatibilities")}: {", ".join([_remove_prefix(i).title().replace("-", " ").replace("_", " ")+(" ("+i.split(":")[0].title()+")" if ":" in i else "") for i in info["incompatibilities"]]) if "incompatibilities" in info.keys() and len(info["incompatibilities"])>0 else "*compatible with everything!*"}
 
