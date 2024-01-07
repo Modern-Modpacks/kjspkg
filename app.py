@@ -102,6 +102,7 @@ def _textbg(s:str) -> str: return "\u001b[47m\u001b[30m"+s+"\u001b[0m" # Make th
 def _err(err:str, dontquit:bool=False): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     if not dontquit: exit(1) # Quit
+def _carbon_err(): _err("CarbonJS has been abandoned (https://github.com/malezjaa/carbonjs/blob/main/README.md), and thus the support for its package format was removed from KJSPKG.") # Print carbon removal error
 def _remove_prefix(pkgname:str) -> str: return pkgname.split(":")[-1] # Remove prefix
 def _format_github(pkgname:str) -> str: return _remove_prefix(pkgname).split('/')[-1].split("@")[0].split("$")[0] # Remove github author, path and branch
 def _loading_anim(prefix:str=""): # Loading animation
@@ -190,7 +191,7 @@ def _pkg_info(pkg:str, ghinfo:bool=True, refresh:bool=True) -> dict: # Get info 
 
     # Call correct function based on prefix
     if prefix=="kjspkg": info = _kjspkginfo(packagename)
-    elif prefix in ("carbon", "carbonjs"): info = _carbonpkginfo(packagename)
+    elif prefix in ("carbon", "carbonjs"): _carbon_err() # info = _carbonpkginfo(packagename)
     elif prefix in ("github", "external"): info = _githubpkginfo(packagename)
     # elif prefix=="discord": 
     #     _discord_login()
@@ -224,28 +225,28 @@ def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
     package["path"] = path # Add the path to info
 
     return package # Return the json object
-def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg (https://github.com/malezjaa/carbonjs)
-    allpackages = get("https://carbon.beanstech.tech/api/packages").json() # Get all packages
-    allpackages = [i for i in allpackages if i["name"]==pkg.lower()] # Find the package with the name provided
-    if len(allpackages)==0: return # If not found, return nothing
+# def _carbonpkginfo(pkg:str) -> dict: # Get info about a carbonjs pkg (https://github.com/malezjaa/carbonjs)
+#     allpackages = get("https://carbon.beanstech.tech/api/packages").json() # Get all packages
+#     allpackages = [i for i in allpackages if i["name"]==pkg.lower()] # Find the package with the name provided
+#     if len(allpackages)==0: return # If not found, return nothing
 
-    repository = allpackages[0]['repository'].replace('https://github.com/', '') # Format the repository
-    branch = get(f"https://api.github.com/repos/{repository}").json()["default_branch"] # Get the default branch
-    info = get(f"https://raw.githubusercontent.com/{repository}/{branch}/carbon.config.json").json() # Request info about the package
+#     repository = allpackages[0]['repository'].replace('https://github.com/', '') # Format the repository
+#     branch = get(f"https://api.github.com/repos/{repository}").json()["default_branch"] # Get the default branch
+#     info = get(f"https://raw.githubusercontent.com/{repository}/{branch}/carbon.config.json").json() # Request info about the package
 
-    return { # Return formatted info
-        "author": info["author"],
-        "description": info["description"],
+#     return { # Return formatted info
+#         "author": info["author"],
+#         "description": info["description"],
         
-        "versions": list(dict.fromkeys([VERSIONS[i] for i in info["minecraftVersion"]])),
-        "modloaders": info["modloaders"],
-        "dependencies": [],
-        "incompatibilities": [],
+#         "versions": list(dict.fromkeys([VERSIONS[i] for i in info["minecraftVersion"]])),
+#         "modloaders": info["modloaders"],
+#         "dependencies": [],
+#         "incompatibilities": [],
 
-        "repo": repository,
-        "branch": branch,
-        "path": "."
-    }
+#         "repo": repository,
+#         "branch": branch,
+#         "path": "."
+#     }
 def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
     return {
         "author": pkg.split("/")[0],
@@ -440,11 +441,9 @@ def pkginfo(pkg:str, *, script:bool=False, githubinfo:bool=True): # Print info a
 
 {_textbg(f" 👁️  {info['ghdata']['watchers_count']} ")} {_textbg(f" 🍴 {info['ghdata']['forks_count']} ")} {_textbg(f" ⭐ {info['ghdata']['stargazers_count']} ")}
 """ if "ghdata" in info else "\n"))
-def listall(*, count:bool=False, search:str="", reload:bool=True, carbon:bool=False): # List all pkgs
-    if not carbon:
-        if reload: _reload_pkgs() # Reload pkgs
-        allpkgs = list(_pkgs_json().keys()) # All package names
-    else: allpkgs = [i["name"] for i in get("https://carbon.beanstech.tech/api/packages").json()]
+def listall(*, count:bool=False, search:str="", reload:bool=True): # List all pkgs
+    if reload: _reload_pkgs() # Reload pkgs
+    allpkgs = list(_pkgs_json().keys()) # All package names
 
     if count: # If count is true
         print(len(allpkgs)) # Print the pkg count
@@ -720,7 +719,6 @@ def info(): # Print the help page
         "Help, I'm locked in a basement packaging scripts!",
         "kjspkg rm -rf / --no-preserve-root",
         "Made in Python 3.whatever!",
-        "Also try CarbonJS!",
         "https://modernmodpacks.site",
         "Made by Modern Modpacks!",
         "gimme gimme gimme",
@@ -740,11 +738,10 @@ def info(): # Print the help page
 kjspkg install/download [pkgname1] [pkgname2] [--quiet/--skipmissing] [--update] [--noreload] - installs packages
 kjspkg remove/uninstall [pkgname1] [pkgname2] [--quiet/--skipmissing] - removes packages
 kjspkg update [pkgname1/*] [pkgname2] [--quiet/--skipmissing] - updates packages
-kjspkg updateall [--quiet/--skipmissing] [--carbon] - updates all packages
+kjspkg updateall [--quiet/--skipmissing] - updates all packages
 
 kjspkg install [pkgname] - installs packages from kjspkg's repo
 kjspkg install kjspkg:[pkgname] - installs packages from kjspkg's repo
-kjspkg install carbon:[pkgname] - installs packages from carbonjs' repo (https://github.com/carbon-kjs)
 kjspkg install github:[author]/[name] - installs external packages from github
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
@@ -764,7 +761,7 @@ kjspkg gui - shows info about the GUI app
 
 Modern Modpacks - Owner
 G_cat101 - Coder
-malezjaa - Creator of CarbonJS
+Tizu69 - Maintainer of KJSPKG Lookup
 Juh9870 - Wanted to be here
     """
 
