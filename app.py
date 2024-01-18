@@ -406,8 +406,9 @@ def pkginfo(pkg:str, *, script:bool=False, githubinfo:bool=True): # Print info a
     if not info: _err(f"Package {pkg} not found") # Err if pkg not found
 
     # Tizu lookup view/download data
-    downloaddata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=downloads")
-    viewdata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=views")
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; Unactivated)"} if _check_for_fun() else None
+    downloaddata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=downloads", headers=headers)
+    viewdata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=views", headers=headers)
     if viewdata.status_code==200:
         info["lookupapi"] = {
             "downloads": downloaddata.json()[pkg] if pkg in downloaddata.json().keys() else 0,
