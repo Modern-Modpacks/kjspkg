@@ -407,7 +407,7 @@ def pkginfo(pkg:str, *, script:bool=False, githubinfo:bool=True): # Print info a
 
     # Tizu lookup view/download data
     downloaddata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=downloads")
-    viewdata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=downloads")
+    viewdata = get("https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=views")
     if viewdata.status_code==200:
         info["lookupapi"] = {
             "downloads": downloaddata.json()[pkg] if pkg in downloaddata.json().keys() else 0,
