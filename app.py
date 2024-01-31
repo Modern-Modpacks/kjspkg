@@ -14,6 +14,7 @@ from multiprocessing import Process # Async threads
 from signal import signal, SIGTERM # Signals in threads
 from time import sleep # Honk mimimimimimimi
 from zipfile import ZipFile # Working with .jars
+from itertools import zip_longest # Ziiiiiiiiiiiiiiiiiiiiiip
 
 from http import server # Discord login stuff
 from urllib.parse import urlparse, parse_qs # Parse url path
@@ -63,6 +64,16 @@ CONFIG = { # Default config
     "trustgithub": False
 }
 NL = "\n" # Bruh
+LOGO = """
+⠀⠀⠀⠀⢀⣤⣶⣿⣿⣶⣤⡀⠀⠀⠀⠀
+⠀⠀⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⠀⠀
+⢠⣄⡀⠉⠻⢿⣿⣿⣿⣿⡿⠟⠉⢀⣠⡄
+⢸⣿⣿⣷⣦⣀⠈⠙⠋⠁⣀⣴⣾⣿⣿⡇
+⢸⣿⣿⣿⣿⣿⣿⠀⠀⣿⣿⣿⣿⣿⣿⡇
+⢸⣿⣿⣿⣿⣿⣿⠀⠀⣿⣿⣿⣿⣿⣿⡇
+⠀⠙⠻⣿⣿⣿⣿⠀⠀⣿⣿⣿⣿⠟⠋⠀
+⠀⠀⠀⠀⠉⠻⢿⠀⠀⡿⠟⠉⠀⠀⠀⠀
+""" # Epic logo in ascii
 
 # VARIABLES
 kjspkgfile = {} # .kjspkg file
@@ -99,6 +110,7 @@ kjspkgfile = {} # .kjspkg file
 # HELPER FUNCTIONS
 def _bold(s:str) -> str: return "\u001b[1m"+s+"\u001b[0m" # Make the text bold
 def _textbg(s:str) -> str: return "\u001b[47m\u001b[30m"+s+"\u001b[0m" # Make the text black and have white background
+def _purple(s:str) -> str: return "\u001b[35;1m"+s+"\u001b[0m" # Make the text bright ourple
 def _err(err:str, dontquit:bool=False): # Handle errors
     print("\u001b[31;1m"+err+"\u001b[0m") # Print error
     if not dontquit: exit(1) # Quit
@@ -156,13 +168,34 @@ def _update_manifest(): # Update .kjspkg file
 def _enable_reflection(): # Enable reflection on 1.16
     with open(path.join("config", "common.properties"), "a+") as f:
         if ("invertClassLoader=true" not in f.read().splitlines()): f.write("invertClassLoader=true")
-def _get_modid(modpath:str) -> str: # Get mod id from a mod file
+def _check_for_forge(): return kjspkgfile["modloader"]=="forge" # Checks the project for forge
+def _get_mod_manifest(modpath:str) -> dict: # Get a mod's mods.toml/fabric.mod.json
     modfile = ZipFile(path.join(getcwd(), "..", "mods", modpath))
 
     try:
-        if kjspkgfile["modloader"]=="forge": return tomlload(modfile.open("META-INF/mods.toml").read().decode("utf-8"))["mods"][0]["modId"]
-        else: return loads(modfile.open(modfile.open("fabric.mod.json").read().decode("utf-8")))["id"]
+        if _check_for_forge(): return tomlload(modfile.open("META-INF/mods.toml").read().decode("utf-8"))
+        else: return loads(modfile.open(modfile.open("fabric.mod.json").read().decode("utf-8")))
     except KeyError: return # Check for wierd mods with no mods.toml/fabric.mod.json
+def _get_mod_version(modpath:str) -> str:
+    manifest = _get_mod_manifest(modpath) # Get manifest
+    if manifest==None: return # Return none if not found
+
+    if _check_for_forge: return manifest["mods"][0]["version"]
+    else: return manifest["version"]
+def _get_versions() -> list: # Get all mod versions
+    modversions = {}
+    for i in listdir(path.join(getcwd(), "..", "mods")):
+        if i.endswith(".jar"): 
+            modversion = _get_mod_version(i)
+            if modversion: modversions[_get_modid(i)] = modversion # For each mod file, get the mod version and add the mod id - mod version pair to the dict
+
+    return modversions # Return the dict of mod versions  
+def _get_modid(modpath:str) -> str: # Get mod id from a mod file
+    manifest = _get_mod_manifest(modpath) # Get manifest
+    if manifest==None: return # Return none if not found
+
+    if _check_for_forge: return manifest["mods"][0]["modId"]
+    else: return manifest["id"]
 def _get_modids() -> list: # Get all mod ids
     modids = []
     for i in listdir(path.join(getcwd(), "..", "mods")):
@@ -170,7 +203,7 @@ def _get_modids() -> list: # Get all mod ids
             modid = _get_modid(i)
             if modid: modids.append(modid) # For each mod file, get the mod id and append
 
-    return modids # Return the list of modids
+    return modids # Return the list of modids    
 
 # def _discord_login(): # Login with discord for discord prefixes
 #     server.HTTPServer(("", 1337), HTTPDiscordLoginRequestHandler).handle_request()
@@ -442,6 +475,31 @@ def pkginfo(pkg:str, *, script:bool=False, githubinfo:bool=True): # Print info a
 
 {_textbg(f" 👁️  {info['ghdata']['watchers_count']} ")} {_textbg(f" 🍴 {info['ghdata']['forks_count']} ")} {_textbg(f" ⭐ {info['ghdata']['stargazers_count']} ")}
 """ if "ghdata" in info else "\n"))
+def fetch(*, logo:bool=True, script:bool=False): # Fetch data about the project in a pfetch-esque format
+    versions = _get_versions() # Get mod versions
+    data = { # Compile all required data
+        "version": f"1.{10+kjspkgfile['version']}",
+        "loader": kjspkgfile["modloader"],
+        "pkgs": len(kjspkgfile["installed"].keys()),
+        "kube": versions["kubejs"] if "kubejs" in versions.keys() else "???",
+        "rhino": versions["rhino"] if "rhino" in versions.keys() else "???",
+        "arch": versions["architectury"] if "architectury" in versions.keys() else "???"
+    }
+
+    # Print it (scripty)
+    if script:
+        print(dumps(data))
+        return
+
+    # Prepare it to look pretty
+    datastr = _bold(f"KJSPKG@{getcwd()}\n")
+    longeststr = len(max(data.keys(), key=len))+1
+    for k,v in data.items(): datastr += f"{_purple(k)}{' '*(longeststr-len(k))}{v}\n" 
+    selectedlogo = LOGO if logo else ""
+
+    # Print it (pretty)
+    for l, d in zip_longest(selectedlogo.splitlines()[1:], datastr.splitlines()): print(f"{_purple(l)+'    ' if l!=None else ''}{d if d!=None else ''}")
+    print()
 def listall(*, count:bool=False, search:str="", reload:bool=True): # List all pkgs
     if reload: _reload_pkgs() # Reload pkgs
     allpkgs = list(_pkgs_json().keys()) # All package names
@@ -747,6 +805,7 @@ kjspkg install github:[author]/[name] - installs external packages from github
 
 kjspkg list [--count] - lists packages (or outputs the count of them)
 kjspkg pkg [package] [--script] [--nogithubinfo] - shows info about the package
+kjspkg fetch [--nologo] [--script] - prints out a neofetch-eqsue screen with info about the current KJSPKG instance
 kjspkg listall/all [--count] [--search "<query>"] [--noreload] - lists all packages
 kjspkg search [query] - searches for packages with a similar name
 kjspkg reload/refresh - reloads the cached package registry
@@ -843,6 +902,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
             "list": listpkgs,
             "pkg": pkginfo,
             "pkginfo": pkginfo,
+            "fetch": fetch,
             "listall": listall,
             "all": listall,
             "search": search,
