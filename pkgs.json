@@ -10,7 +10,7 @@
     "boss-tools-oxygen": "gcatkjspkgs/boss-tools-oxygen-js",
     "lightlevel-spawning-backport": "gcatkjspkgs/lightlevel-spawning-backport",
 
-    "unifico": "glomdom/unifico",
+    "unifico": "glomdom/unifico@master",
 
     "structurejs": "TheRealQuentin765/structureJSv2",
     "cutscenejs": "TheRealQuentin765/cutscenes-kubejs",
