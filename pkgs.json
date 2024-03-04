@@ -10,6 +10,8 @@
     "boss-tools-oxygen": "gcatkjspkgs/boss-tools-oxygen-js",
     "lightlevel-spawning-backport": "gcatkjspkgs/lightlevel-spawning-backport",
 
+    "unifico": "glomdom/unifico",
+
     "structurejs": "TheRealQuentin765/structureJSv2",
     "cutscenejs": "TheRealQuentin765/cutscenes-kubejs",
     "climate-compass": "TheRealQuentin765/climate-kubejs",
