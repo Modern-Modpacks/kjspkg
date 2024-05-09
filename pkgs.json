@@ -19,7 +19,7 @@
 
     "boss-death-world-notification": "Mango-Minecraft-Project/Mango-KubeJScripts$scripts/World_Notification",
     "create-delight": "Mango-Minecraft-Project/Mango-KubeJScripts$scripts/Create_Delight",
-    
+
     "gregicsifting": "Drackion/GregicSifting",
     "cauldron-hand-washing": "V972/CauldronHandWashing",
     "buddingamethyst": "Liopyu/Lios-KubeJS-Scripts$scripts/buddingamethyst",
@@ -59,11 +59,13 @@
     "chipped-rei-group": "gcatkjspkgs/group-chipped-rei",
     "mekanism-custom-infused-type": "gcatkjspkgs/mekanism-custom-infused-type@1.18",
     "extended-days": "gcatkjspkgs/extended-days",
-	
+
     "grindstonerepairjs": "beckadamtheinventor/GrindstoneRepairJS@master",
 
     "kjs-datagen-scripts": "FooterManDev/KJS-Datagen-Scripts",
     "kubejs-lootbags": "Kisuny/KubeJS-lootbags",
 
-    "kubejs-copypaste": "DevDyna/Kubejs-CopyPaste"
+    "kubejs-copypaste": "DevDyna/Kubejs-CopyPaste",
+
+    "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master",
 }
