@@ -67,5 +67,6 @@
 
     "kubejs-copypaste": "DevDyna/Kubejs-CopyPaste",
 
-    "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master"
+    "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master",
+    "sequenced-assembly": "omgimanerd/kubejs-utilities$SequencedAssembly@master"
 }
