@@ -66,7 +66,7 @@
     "kubejs-lootbags": "Kisuny/KubeJS-lootbags",
 
     "kubejs-copypaste": "DevDyna/Kubejs-CopyPaste",
-    "script-collection": "Celestial-Remembrance/kubejs-testing"
+    "script-collection": "Celestial-Remembrance/kubejs-testing",
 
     "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master",
     "sequenced-assembly": "omgimanerd/kubejs-utilities$SequencedAssembly@master"
