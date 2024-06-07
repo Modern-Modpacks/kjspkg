@@ -69,5 +69,9 @@
     "script-collection": "Celestial-Remembrance/kubejs-testing",
 
     "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master",
-    "sequenced-assembly": "omgimanerd/kubejs-utilities$SequencedAssembly@master"
+    "sequenced-assembly": "omgimanerd/kubejs-utilities$SequencedAssembly@master",
+
+    "faster-climbing": "FalAut/FalAut-KubeJScripts$scripts/Faster_Climbing@2001",
+    "numerical-mana-in-jade": "FalAut/FalAut-KubeJScripts$scripts/Numerical_Mana_In_Jade@2001",
+    "quick-equipment-swapping": "FalAut/FalAut-KubeJScripts$scripts/Quick_Equipment_Swapping@2001"
 }
