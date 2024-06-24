@@ -1,6 +1,7 @@
 {
     "kjspkg-compat-layer": "gcatkjspkgs/kjspkg-compat-layer",
     "brainfuck-interpreter": "gcatkjspkgs/brainfuckJS",
+    "chunk-randomizer": "gcatkjspkgs/ChunkRandomizer",
 
     "trippers-titles": "gcatkjspkgs/trippers-titles",
     "thermalootjs": "gcatkjspkgs/thermalootjs",
