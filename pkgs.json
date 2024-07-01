@@ -74,5 +74,8 @@
 
     "faster-climbing": "FalAut/FalAut-KubeJScripts$scripts/Faster_Climbing@2001",
     "numerical-mana-in-jade": "FalAut/FalAut-KubeJScripts$scripts/Numerical_Mana_In_Jade@2001",
-    "quick-equipment-swapping": "FalAut/FalAut-KubeJScripts$scripts/Quick_Equipment_Swapping@2001"
+    "quick-equipment-swapping": "FalAut/FalAut-KubeJScripts$scripts/Quick_Equipment_Swapping@2001",
+
+    "inventory-sort": "Notenoughmail/kube-scripts$1-20/inventory-sort",
+    "auto-third-person": "Notenoughmail/kube-scripts$1-20/auto-third-person"
 }
