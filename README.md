@@ -3,7 +3,7 @@
 A simple package manager for KubeJS.
 
 [![contributions](https://github.com/Modern-Modpacks/kjspkg/assets/79367505/d2519e70-ce96-4bbc-b35b-af3e674bf421)](https://github.com/Modern-Modpacks/kjspkg#adding-your-own-package)
-[![lat](https://img.shields.io/badge/approved%20by-lat-c374e4?style=for-the-badge&labelColor=480066)](https://media.discordapp.net/attachments/764838645374648353/1105578193181753465/image.png?width=545&height=657)
+[![lat](https://img.shields.io/badge/approved%20by-lat-c374e4?style=for-the-badge&labelColor=480066)](https://github.com/user-attachments/assets/0df64919-6333-447e-9869-c270138941bd)
 
 ![logo](https://user-images.githubusercontent.com/79367505/227798123-5454e9b1-b39b-4c45-9e02-e18f2e807585.png)
 
@@ -94,7 +94,7 @@ kjspkg help
 
 ## Supported versions
 
-![Version list (3)](https://github.com/Modern-Modpacks/kjspkg/assets/79367505/9da92336-cbc7-4ac3-8e87-7070a1fa7efd)
+![Version list](https://github.com/user-attachments/assets/5a3b8e3a-bd91-456e-8443-bbffa894a38f)
 
 (Thanks tizu.hehe on discord for the figma template)
 

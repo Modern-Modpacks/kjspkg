@@ -53,7 +53,12 @@ VERSIONS = { # Version and version keys
 
     "1.20.1": 10,
     "1.20.2": 10,
-    "1.20": 10
+    "1.20.3": 10,
+    "1.20.4": 10,
+    "1.20": 10,
+
+    "1.21.1": 11,
+    "1.21": 11
 }
 SCRIPT_DIRS = ("server_scripts", "client_scripts", "startup_scripts") # Script directories
 ASSET_DIRS = ("data", "assets") # Asset directories
@@ -949,7 +954,7 @@ if __name__=="__main__": # If not imported
 
     try: Fire(_parser) # Run parser with fire
     except (KeyboardInterrupt, EOFError): exit(0) # Ignore some exceptions
-    except TypeError: _err("Wrong syntax") # Wrong syntax err
+    # except TypeError: _err("Wrong syntax") # Wrong syntax err
     except GitCommandNotFound: _err("Git not found. Install it here: https://git-scm.com/downloads") # Git not found err
     except (exceptions.ConnectionError, exceptions.ReadTimeout): _err("Low internet connection") # Low internet connection err
 
