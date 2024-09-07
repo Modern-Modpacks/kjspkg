@@ -96,7 +96,7 @@ kjspkg help
 
 ![Version list](https://github.com/user-attachments/assets/5a3b8e3a-bd91-456e-8443-bbffa894a38f)
 
-(Thanks tizu.hehe on discord for the figma template)
+(Thanks tizu.dev on discord for the figma template)
 
 Tested means that the version is confirmed to be working;
 
