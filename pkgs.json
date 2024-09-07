@@ -1,6 +1,7 @@
 {
     "kjspkg-compat-layer": "gcatkjspkgs/kjspkg-compat-layer",
     "brainfuck-interpreter": "gcatkjspkgs/brainfuckJS",
+    "chunk-randomizer": "gcatkjspkgs/ChunkRandomizer",
 
     "trippers-titles": "gcatkjspkgs/trippers-titles",
     "thermalootjs": "gcatkjspkgs/thermalootjs",
@@ -66,6 +67,15 @@
     "kubejs-lootbags": "Kisuny/KubeJS-lootbags",
 
     "kubejs-copypaste": "DevDyna/Kubejs-CopyPaste",
+    "script-collection": "Celestial-Remembrance/kubejs-testing",
 
-    "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master"
+    "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master",
+    "sequenced-assembly": "omgimanerd/kubejs-utilities$SequencedAssembly@master",
+
+    "faster-climbing": "FalAut/FalAut-KubeJScripts$scripts/Faster_Climbing@2001",
+    "numerical-mana-in-jade": "FalAut/FalAut-KubeJScripts$scripts/Numerical_Mana_In_Jade@2001",
+    "quick-equipment-swapping": "FalAut/FalAut-KubeJScripts$scripts/Quick_Equipment_Swapping@2001",
+
+    "inventory-sort": "Notenoughmail/kube-scripts$1-20/inventory-sort",
+    "auto-third-person": "Notenoughmail/kube-scripts$1-20/auto-third-person"
 }
