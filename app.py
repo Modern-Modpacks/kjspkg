@@ -548,7 +548,7 @@ def init(*, quiet:bool=False, override:bool=False, cancreate:str=None, **configa
         else: exit(0)
 
     # Ask for missing params
-    if "version" not in configargs.keys(): configargs["version"] = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19/1.20): ")) # Version
+    if "version" not in configargs.keys(): configargs["version"] = input(_bold("Input your minecraft version (1.12/1.16/1.18/1.19/1.20/1.21): ")) # Version
     if configargs["version"] not in VERSIONS.keys(): _err("Unknown or unsupported version: "+str(configargs["version"]))
     configargs["version"] = VERSIONS[configargs["version"]]
 
