@@ -28,6 +28,8 @@
 
     "entity-snip-snip": "gcatkjspkgs/entity-snip-snip",
     "not-neat": "gcatkjspkgs/not-neat",
+    "command-restrictor": "gcatkjspkgs/command-restrictor@1.18",
+    "command-restrictor-6": "gcatkjspkgs/command-restrictor@1.19+",
     "craft-js": "breakinblocks/Craft.js@1.18",
     "craft-js-6": "breakinblocks/Craft.js@1.19+",
 
