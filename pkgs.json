@@ -79,5 +79,7 @@
     "quick-equipment-swapping": "FalAut/FalAut-KubeJScripts$scripts/Quick_Equipment_Swapping@2001",
 
     "inventory-sort": "Notenoughmail/kube-scripts$1-20/inventory-sort",
-    "auto-third-person": "Notenoughmail/kube-scripts$1-20/auto-third-person"
+    "auto-third-person": "Notenoughmail/kube-scripts$1-20/auto-third-person",
+
+    "lychee-schema": "9thCore/KubeJS_Customs$kubejs-packages/lychee-schema"
 }
