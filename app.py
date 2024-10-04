@@ -179,13 +179,13 @@ def _get_mod_manifest(modpath:str) -> dict: # Get a mod's mods.toml/fabric.mod.j
 
     try:
         if _check_for_forge(): return tomlload(modfile.open("META-INF/mods.toml").read().decode("utf-8"))
-        else: return loads(modfile.open(modfile.open("fabric.mod.json").read().decode("utf-8")))
+        else: return loads(modfile.open("fabric.mod.json").read().decode("utf-8"))
     except KeyError: return # Check for wierd mods with no mods.toml/fabric.mod.json
 def _get_mod_version(modpath:str) -> str:
     manifest = _get_mod_manifest(modpath) # Get manifest
     if manifest==None: return # Return none if not found
 
-    if _check_for_forge: return manifest["mods"][0]["version"]
+    if _check_for_forge(): return manifest["mods"][0]["version"]
     else: return manifest["version"]
 def _get_versions() -> list: # Get all mod versions
     modversions = {}
@@ -199,7 +199,7 @@ def _get_modid(modpath:str) -> str: # Get mod id from a mod file
     manifest = _get_mod_manifest(modpath) # Get manifest
     if manifest==None: return # Return none if not found
 
-    if _check_for_forge: return manifest["mods"][0]["modId"]
+    if _check_for_forge(): return manifest["mods"][0]["modId"]
     else: return manifest["id"]
 def _get_modids() -> list: # Get all mod ids
     modids = []
