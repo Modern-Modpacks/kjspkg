@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+print("This file is only here as a reference, please use the go one instead!")
+print("Will be removed once the Go one is ready.")
 
 # IMPORTS
 
@@ -190,11 +192,11 @@ def _get_mod_version(modpath:str) -> str:
 def _get_versions() -> list: # Get all mod versions
     modversions = {}
     for i in listdir(path.join(getcwd(), "..", "mods")):
-        if i.endswith(".jar"): 
+        if i.endswith(".jar"):
             modversion = _get_mod_version(i)
             if modversion: modversions[_get_modid(i)] = modversion # For each mod file, get the mod version and add the mod id - mod version pair to the dict
 
-    return modversions # Return the dict of mod versions  
+    return modversions # Return the dict of mod versions
 def _get_modid(modpath:str) -> str: # Get mod id from a mod file
     manifest = _get_mod_manifest(modpath) # Get manifest
     if manifest==None: return # Return none if not found
@@ -204,11 +206,11 @@ def _get_modid(modpath:str) -> str: # Get mod id from a mod file
 def _get_modids() -> list: # Get all mod ids
     modids = []
     for i in listdir(path.join(getcwd(), "..", "mods")):
-        if i.endswith(".jar"): 
+        if i.endswith(".jar"):
             modid = _get_modid(i)
             if modid: modids.append(modid) # For each mod file, get the mod id and append
 
-    return modids # Return the list of modids    
+    return modids # Return the list of modids
 
 # def _discord_login(): # Login with discord for discord prefixes
 #     server.HTTPServer(("", 1337), HTTPDiscordLoginRequestHandler).handle_request()
@@ -231,7 +233,7 @@ def _pkg_info(pkg:str, ghinfo:bool=True, refresh:bool=True) -> dict: # Get info 
     if prefix=="kjspkg": info = _kjspkginfo(packagename)
     elif prefix in ("carbon", "carbonjs"): _carbon_err() # info = _carbonpkginfo(packagename)
     elif prefix in ("github", "external"): info = _githubpkginfo(packagename)
-    # elif prefix=="discord": 
+    # elif prefix=="discord":
     #     _discord_login()
     #     exit()
     else: _err("Unknown prefix: "+_bold(prefix))
@@ -252,7 +254,7 @@ def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
         branch = repo.split("@")[-1] # Set the branch
         repo = repo.split("@")[0] # Remove the branch from the repo
     path = "."
-    if "$" in repo: 
+    if "$" in repo:
         path = repo.split("$")[-1] # Set the path
         repo = repo.split("$")[0] # Remove the path from the repo
 
@@ -275,7 +277,7 @@ def _kjspkginfo(pkg:str) -> dict: # Get info about a default kjspkg pkg
 #     return { # Return formatted info
 #         "author": info["author"],
 #         "description": info["description"],
-        
+
 #         "versions": list(dict.fromkeys([VERSIONS[i] for i in info["minecraftVersion"]])),
 #         "modloaders": info["modloaders"],
 #         "dependencies": [],
@@ -289,7 +291,7 @@ def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
     return {
         "author": pkg.split("/")[0],
         "description": "",
-        
+
         "versions": [kjspkgfile["version"]],
         "modloaders": [kjspkgfile["modloader"]],
         "dependencies": [],
@@ -300,7 +302,7 @@ def _githubpkginfo(pkg:str) -> dict: # Get dummy info about an external pkg
     }
 def _move_pkg_contents(pkg:str, tmpdir:str, furtherpath:str): # Move the contents of the pkg to the .kjspkg folders
     # Find the license
-    licensefile = path.join(tmpdir, "LICENSE") 
+    licensefile = path.join(tmpdir, "LICENSE")
     if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.txt")
     if not path.exists(licensefile): licensefile = path.join(tmpdir, "LICENSE.md")
 
@@ -325,13 +327,13 @@ def _move_pkg_contents(pkg:str, tmpdir:str, furtherpath:str): # Move the content
                 makedirs(path.sep.join(finalpath.split(path.sep)[:-1]), exist_ok=True) # Create parent dirs
                 move(tmppath, finalpath) # Move it to the permanent dir
                 assetfiles.append(finalpath) # Add it to assetfiles
-    
+
     kjspkgfile["installed"][pkg] = assetfiles # Add the pkg to installed
 def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool, *, _depmode:bool=False): # Install the pkg
     if not update and _format_github(pkg) in kjspkgfile["installed"]:  # If the pkg is already installed and the update parameter is false, notify the user and just return
         if not quiet: print(_bold(f"Package \"{pkg}\" already installed ✓"))
         return
-    if update: 
+    if update:
         if pkg=="*": # If updating all packages
             for p in list(kjspkgfile["installed"].keys()): _install_pkg(p, True, quiet, skipmissing, reload, _depmode=True) # Update all packages
             return
@@ -339,7 +341,7 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool
         _remove_pkg(pkg, False) # If update is true, remove the previous version of the pkg
 
     package = _pkg_info(pkg, False, reload) # Get pkg
-    if not package and reload: 
+    if not package and reload:
         _reload_pkgs() # Reload if not found
         package = _pkg_info(pkg, False, reload) # Try to get the pkg again
 
@@ -359,10 +361,10 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool
     if (("dependencies" in package.keys() and any([i.startswith("mod:") for i in package["dependencies"]])) or ("incompatibilities" in package.keys() and any([i.startswith("mod:") for i in package["incompatibilities"]]))): modids = _get_modids() # Get a list of all mod ids
 
     if "dependencies" in package.keys():
-        for dep in package["dependencies"]: 
+        for dep in package["dependencies"]:
             if dep.lower().startswith("mod:") and _remove_prefix(dep.lower()) not in modids: _err(f"Mod \"{_remove_prefix(dep.replace('_', ' ').replace('-', ' ')).title()}\" not found.") # Check for mod dependency
             elif not dep.lower().startswith("mod:"): _install_pkg(dep.lower(), dep.lower() in kjspkgfile["installed"], quiet, skipmissing, reload) # Install/update package dependency
-    if "incompatibilities" in package.keys(): 
+    if "incompatibilities" in package.keys():
         for i in package["incompatibilities"]:
             if i.lower().startswith("mod:") and _remove_prefix(i.lower()) in modids: _err(f"Incompatible mod: "+_remove_prefix(i.replace('_', ' ').replace('-', ' ')).title()) # Check for mod incompats
             elif i in kjspkgfile["installed"].keys(): _err(f"Incompatible package: "+i) # Throw err if incompats detected
@@ -383,7 +385,7 @@ def _install_pkg(pkg:str, update:bool, quiet:bool, skipmissing:bool, reload:bool
         loadthread.terminate() # Kill the loading animation
         if pkg=="*": print(_bold(f"All packages updated succesfully! ✓")) # Show message if all packages are updated
         else: print(_bold(f"Package \"{_format_github(pkg)}\" {'installed' if not update else 'updated'} succesfully! ✓")) # Show message if one package is installed/updated
-    
+
 def _remove_pkg(pkg:str, skipmissing:bool): # Remove the pkg
     if pkg not in kjspkgfile["installed"].keys():
         if not skipmissing: _err(f"Package \"{pkg}\" is not installed") # If the pkg is not installed, err
@@ -417,7 +419,7 @@ def install(*pkgs:str, update:bool=False, quiet:bool=False, skipmissing:bool=Fal
 
         if update and pkg not in kjspkgfile["installed"].keys() and not skipmissing and pkg!="*": _err(f"Package \"{_format_github(pkg)}\" not found") # Err if package not found during update
         _install_pkg(pkg, update, quiet, skipmissing, reload) # Install package
-        
+
 def removepkg(*pkgs:str, quiet:bool=False, skipmissing:bool=False): # Remove pkgs
     for pkg in pkgs:
         pkg = _remove_prefix(pkg.lower())
@@ -499,7 +501,7 @@ def fetch(*, logo:bool=True, script:bool=False): # Fetch data about the project 
     # Prepare it to look pretty
     datastr = _bold(f"KJSPKG@{getcwd()}\n")
     longeststr = len(max(data.keys(), key=len))+1
-    for k,v in data.items(): datastr += f"{_purple(k)}{' '*(longeststr-len(k))}{v}\n" 
+    for k,v in data.items(): datastr += f"{_purple(k)}{' '*(longeststr-len(k))}{v}\n"
     selectedlogo = LOGO if logo else ""
 
     # Print it (pretty)
@@ -568,7 +570,7 @@ def init(*, quiet:bool=False, override:bool=False, cancreate:str=None, **configa
     with open(".kjspkg", "w+") as f: dump(kjspkgfile, f) # Create .kjspkg file
     if not quiet: print(_bold("Project created!")) # Woo!
 def uninit(*, confirm:bool=False): # Remove the project
-    if confirm or input("\u001b[31;1mDOING THIS WILL REMOVE ALL PACKAGES AND UNINSTALL KJSPKG COMPLETELY, ARE YOU SURE YOU WANT TO PROCEED? (y/N): \u001b[0m").lower()=="y": 
+    if confirm or input("\u001b[31;1mDOING THIS WILL REMOVE ALL PACKAGES AND UNINSTALL KJSPKG COMPLETELY, ARE YOU SURE YOU WANT TO PROCEED? (y/N): \u001b[0m").lower()=="y":
         _delete_project()
         print("\u001b[31;1mProject deleted\u001b[0m")
     else: print(_bold("Aborted."))
@@ -711,14 +713,14 @@ def devdist(description:str=None, author:str=None, dependencies:list=None, incom
                 if name.startswith("kjspkg_"): # If the file starts with kjspkg_
                     makedirs(path.join(distdir, dirpath), exist_ok=True) # Create parents
                     copy(path.join(dirpath, name), path.join(distdir, dirpath, name.removeprefix("kjspkg_"))) # Copy it
-    
+
     # Write .kjspkg manifest
     if generatemanifest:
         with open(path.join(distdir, ".kjspkg"), "w+") as f:
             dump({
                 "author": author,
                 "description": description,
-                
+
                 "versions": versions,
                 "modloaders": modloaders,
                 "dependencies": dependencies,
@@ -877,7 +879,7 @@ STEP 6
 The kombucha is ready to drink immediately, or you can start a ‘secondary fermentation’ by adding flavours such as fruit, herbs and spices to the drawn-off liquid and leaving it bottled for a few more days before drinking. Will keep in the fridge for up to three months.
     """
     print(RECIPE)
- 
+
 # PARSER FUNCTION
 def _parser(func:str="help", *args, help:bool=False, **kwargs):
     global kjspkgfile
@@ -933,7 +935,7 @@ def _parser(func:str="help", *args, help:bool=False, **kwargs):
         }
 
     if func not in FUNCTIONS.keys(): _err(f"Command \"{func}\" is not found. Run \"kjspkg {'dev ' if devparser else ''}help\" to see all of the available commands") # Wrong command err
-    
+
     if not devparser: # Skip the .kjspkg file stuff if the parser is the dev parser
         helperfuncs = (info, guiinfo, init, pkginfo, listall, search, kombucha) # Helper commands that don't require a project
         if FUNCTIONS[func] not in helperfuncs and not _project_exists(): # If a project is not found, call init

@@ -7,7 +7,9 @@ A simple package manager for KubeJS.
 
 ![logo](https://user-images.githubusercontent.com/79367505/227798123-5454e9b1-b39b-4c45-9e02-e18f2e807585.png)
 
-## Installation & Update
+_Work in progress_
+
+<!-- ## Installation & Update
 
 ### Requirements
 
@@ -67,7 +69,7 @@ kjspkg help
     {
         "author": "<your_name>",
         "description": "<description>",
-        
+
         "versions": [<Version key numbers (see the numbers in parentheses in the table below, or use this formula: "version title = 1.(version key + 10).whatever"). Can contain multiple numbers>],
         "modloaders": [<Modloaders ("fabric"/"forge", "fabric" will for quilt as well)>. Can contain multiple modloaders],
         "dependencies": [<Package names that your package depends on, blank if none. To depend on mods add "mod:" before the mod id>],
@@ -108,4 +110,4 @@ Partial support means that the version is supported, but not as much as the full
 
 No support means that the version works, but any issues that you have with it won't be fixed.
 
-Borked means it doesn't work lmao.
+Borked means it doesn't work lmao. -->
