@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-print("This file is only here as a reference, please use the go one instead!")
-print("Will be removed once the Go one is ready.")
+# print("This file is only here as a reference, please use the go one instead!")
+# print("Will be removed once the Go one is ready.")
 
 # IMPORTS
 

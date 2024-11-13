@@ -9,6 +9,8 @@ A simple package manager for KubeJS.
 
 _Work in progress_
 
+**The Go API exposed at github.com/Modern-Modpacks/kjspkg/pkg/kjspkg is not stable. It is not recommended to use it just yet.**
+
 <!-- ## Installation & Update
 
 ### Requirements
