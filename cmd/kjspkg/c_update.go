@@ -8,7 +8,7 @@ import (
 )
 
 type CUpdate struct {
-	Packages      []string `arg:"" help:"The packages to update ('github:author/repo$path@branch' syntax supported)"`
+	Packages      []string `optional:"" arg:"" help:"The packages to update ('github:author/repo$path@branch' syntax supported)"`
 	TrustExternal bool     `help:"If GitHub packages should be trusted"`
 	NoModCheck    bool     `help:"If mod dependency check should be skipped (experimental)"`
 	All           bool     `help:"Update all packages ('update *'/'updateall' use this)"`
@@ -16,7 +16,7 @@ type CUpdate struct {
 
 func (c *CUpdate) Run(ctx *Context) error {
 	packages := []string{}
-	if slices.Contains(c.Packages, "*") || c.All {
+	if slices.Contains(c.Packages, "*") {
 		if len(c.Packages) > 1 {
 			return fmt.Errorf("cannot combine * with others")
 		}
@@ -40,6 +40,22 @@ func (c *CUpdate) Run(ctx *Context) error {
 		Update:        true,
 	}
 	return cmd.Run(ctx)
+}
+
+func (c *CUpdate) AfterApply() error {
+	if !c.All && len(c.Packages) == 0 {
+		return fmt.Errorf("no packages specified")
+	}
+
+	if c.All && len(c.Packages) > 0 {
+		return fmt.Errorf("cannot upgrade specific packages if --all specified")
+	}
+
+	if c.All {
+		c.Packages = []string{"*"}
+	}
+
+	return nil
 }
 
 type CUpdateAll struct {
