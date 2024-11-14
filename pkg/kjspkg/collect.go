@@ -8,7 +8,6 @@ import (
 	"github.com/Modern-Modpacks/kjspkg/pkg/commons"
 )
 
-// TODO: refactor this; gcast, trust me, this was worse
 // *mods* may be nil, in which case mod check gets ignored
 func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, trustExternal, update bool, mods map[string]string) (map[string]PackageLocator, error) {
 	toInstall := map[string]PackageLocator{}
@@ -18,7 +17,6 @@ func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, tru
 		return nil, err
 	}
 
-	// TODO: make this better
 	if _, ok := cfg.Installed[ref.Id]; ok {
 		if !update {
 			return toInstall, nil
@@ -30,19 +28,8 @@ func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, tru
 		return nil, err
 	}
 
-	if !slices.Contains(pkg.Versions, cfg.Version) {
-		versions := []string{}
-		for _, i := range pkg.Versions {
-			versions = append(versions, GetVersionString(i))
-		}
-		return nil, fmt.Errorf("not available for %s, only %s", GetVersionString(cfg.Version), strings.Join(versions, ", "))
-	}
-	if !slices.Contains(pkg.ModLoaders, cfg.ModLoader) {
-		loaders := []string{}
-		for _, l := range pkg.ModLoaders {
-			loaders = append(loaders, commons.TitleCase(string(l)))
-		}
-		return nil, fmt.Errorf("not available for %s, only %s", commons.TitleCase(string(cfg.ModLoader)), strings.Join(loaders, ", "))
+	if err := CollectEnsureVersion(pkg, cfg); err != nil {
+		return nil, err
 	}
 
 	for _, dep := range pkg.Incompatibilities {
@@ -77,14 +64,24 @@ func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, tru
 	}
 	toInstall[ref.String()] = ref
 
-	// TODO: make this better
-	if !update {
-		for _, ref := range toInstall {
-			if _, ok := cfg.Installed[ref.Id]; ok {
-				delete(toInstall, ref.Id)
-			}
-		}
-	}
-
 	return toInstall, nil
+}
+
+// intended to be used by CollectPackages!
+func CollectEnsureVersion(pkg Package, cfg *Config) error {
+	if !slices.Contains(pkg.Versions, cfg.Version) {
+		versions := []string{}
+		for _, i := range pkg.Versions {
+			versions = append(versions, GetVersionString(i))
+		}
+		return fmt.Errorf("not available for %s, only %s", GetVersionString(cfg.Version), strings.Join(versions, ", "))
+	}
+	if !slices.Contains(pkg.ModLoaders, cfg.ModLoader) {
+		loaders := []string{}
+		for _, l := range pkg.ModLoaders {
+			loaders = append(loaders, commons.TitleCase(string(l)))
+		}
+		return fmt.Errorf("not available for %s, only %s", commons.TitleCase(string(cfg.ModLoader)), strings.Join(loaders, ", "))
+	}
+	return nil
 }
