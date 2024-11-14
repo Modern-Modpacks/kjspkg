@@ -136,8 +136,14 @@ func InstallCopy(path string, loc PackageLocator) ([]string, error) {
 				return err
 			}
 
-			os.MkdirAll(filepath.Join(path, name, filepath.Dir(relpath)), 0744) // TODO: idk why I need this here, but I do :)
-			err = os.Rename(longpath, filepath.Join(path, name, relpath))
+			virtpath := filepath.Join(path, name, relpath)
+			println(virtpath)
+			if _, err := os.Stat(virtpath); err == nil {
+				return fmt.Errorf("asset file exists: %s", virtpath)
+			}
+
+			os.MkdirAll(filepath.Dir(virtpath), 0744) // TODO: idk why I need this here, but I do :)
+			err = os.Rename(longpath, virtpath)
 			if err != nil {
 				return err
 			}
