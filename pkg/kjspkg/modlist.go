@@ -41,8 +41,8 @@ func GetMods(path string, modlessOk bool, corruptedOk bool) (map[string]string, 
 			var foundManifest bool
 
 			for _, f := range r.File {
-				// TODO: im not sure why I check this twice but I do?
-				if strings.HasSuffix(f.Name, "mods.toml") || strings.HasSuffix(f.Name, ".mod.json") {
+				forgeLike, fabricLike := strings.HasSuffix(f.Name, "mods.toml"), strings.HasSuffix(f.Name, ".mod.json")
+				if forgeLike || fabricLike {
 					file, err := f.Open()
 					if err != nil {
 						if !corruptedOk {
@@ -52,7 +52,7 @@ func GetMods(path string, modlessOk bool, corruptedOk bool) (map[string]string, 
 					}
 					defer file.Close()
 
-					if strings.HasSuffix(f.Name, "mods.toml") {
+					if forgeLike {
 						var manifest struct {
 							Mods []struct {
 								ModId   string `toml:"modId"`
@@ -70,7 +70,7 @@ func GetMods(path string, modlessOk bool, corruptedOk bool) (map[string]string, 
 							modVersion = manifest.Mods[0].Version
 							foundManifest = true
 						}
-					} else if strings.HasSuffix(f.Name, ".mod.json") {
+					} else if fabricLike {
 						var manifest struct {
 							ID      string `json:"id"`
 							Version string `json:"version"`
