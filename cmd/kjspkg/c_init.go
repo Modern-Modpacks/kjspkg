@@ -12,7 +12,6 @@ type CInit struct {
 	Modloader kjspkg.ModLoader `help:"Mod loader (forge, fabric, quilt, neoforge)"`
 }
 
-// TODO: god
 func (c *CInit) Run(ctx *Context) error {
 	if !kjspkg.IsKube(ctx.Path) {
 		return fmt.Errorf("are you sure this is the kubejs directory?")
