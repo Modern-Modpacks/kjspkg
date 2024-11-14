@@ -115,7 +115,7 @@ func InstallCopy(path string, loc PackageLocator) ([]string, error) {
 
 	for _, name := range ScriptDirs {
 		root, target := filepath.Join(repoPath, name), filepath.Join(path, name, ".kjspkg", loc.Id)
-		os.MkdirAll(root, 0744) // HACK: creates dir so that I don't have to check if it exists or not
+		os.MkdirAll(root, 0744) // TODO: creates dir so that I don't have to check if it exists or not
 		err := os.Rename(root, target)
 		if err != nil {
 			return nil, err
@@ -125,7 +125,7 @@ func InstallCopy(path string, loc PackageLocator) ([]string, error) {
 	assets := []string{}
 	for _, name := range AssetDirs {
 		root := filepath.Join(repoPath, name)
-		os.MkdirAll(root, 0744) // HACK: creates dir so that I don't have to check if it exists or not
+		os.MkdirAll(root, 0744) // TODO: creates dir so that I don't have to check if it exists or not
 		err := filepath.WalkDir(root, func(longpath string, d fs.DirEntry, err error) error {
 			if d.IsDir() {
 				return nil
@@ -136,6 +136,7 @@ func InstallCopy(path string, loc PackageLocator) ([]string, error) {
 				return err
 			}
 
+			os.MkdirAll(filepath.Join(path, name, filepath.Dir(relpath)), 0744) // TODO: idk why I need this here, but I do :)
 			err = os.Rename(longpath, filepath.Join(path, name, relpath))
 			if err != nil {
 				return err
