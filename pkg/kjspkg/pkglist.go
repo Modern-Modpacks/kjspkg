@@ -34,8 +34,7 @@ func GetPackageList() (map[string]PackageLocator, error) {
 
 	var list = map[string]PackageLocator{}
 	for id, input := range locators {
-		loc := PackageLocator{}
-		err := loc.FromString(id, input)
+		loc, err := PackageLocatorFromString(id, input)
 		if err != nil {
 			return nil, err
 		}
@@ -54,13 +53,14 @@ type PackageLocator struct {
 	Path       *string
 }
 
-func (p *PackageLocator) FromString(id, input string) error {
+func PackageLocatorFromString(id, input string) (PackageLocator, error) {
+	p := PackageLocator{}
+
 	// I stole this from https://github.com/Modern-Modpacks/kjspkg-lookup/blob/main/src/lib/consts.ts#L7
 	regex := regexp.MustCompile(`([^/@$]*)\/([^/@$]*)(\$[^@$]*)?(@[^/@$]*)?`)
-
 	match := regex.FindStringSubmatch(input)
 	if match == nil {
-		return fmt.Errorf("input string does not match the expected format: %s", input)
+		return p, fmt.Errorf("input string does not match the expected format: %s", input)
 	}
 
 	p.User = match[1]
@@ -80,30 +80,28 @@ func (p *PackageLocator) FromString(id, input string) error {
 		p.Id = p.Repository
 	}
 
-	return nil
+	return p, nil
 }
 
 // Obtains a package id from a pointer (that is to say, a string like 'kjspkg:amogus' or 'github:...')
-func (p *PackageLocator) FromPointer(id string, refs map[string]PackageLocator, trustExternal bool) error {
+func PackageLocatorFromPointer(id string, refs map[string]PackageLocator, trustExternal bool) (PackageLocator, error) {
 	if strings.HasPrefix(id, "github:") {
-		l := PackageLocator{}
-		err := l.FromString("", strings.TrimPrefix(id, "github:"))
+		l, err := PackageLocatorFromString("", strings.TrimPrefix(id, "github:"))
 		if err != nil {
-			return err
+			return l, err
 		}
 		if !trustExternal {
-			return fmt.Errorf("you may not use external packages unless you trust them")
+			return l, fmt.Errorf("you may not use external packages unless you trust them")
 		}
-		*p = l
+		return l, nil
 	} else {
 		id = strings.TrimPrefix(id, "kjspkg:")
 		r, ok := refs[id]
 		if !ok {
-			return fmt.Errorf("cannot find package: %s", id)
+			return PackageLocator{}, fmt.Errorf("cannot find package: %s", id)
 		}
-		*p = r
+		return r, nil
 	}
-	return nil
 }
 
 func (p *PackageLocator) String() string {

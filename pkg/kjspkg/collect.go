@@ -13,8 +13,7 @@ import (
 func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, trustExternal, update bool, mods map[string]string) (map[string]PackageLocator, error) {
 	toInstall := map[string]PackageLocator{}
 
-	ref := PackageLocator{}
-	err := ref.FromPointer(id, refs, trustExternal)
+	ref, err := PackageLocatorFromPointer(id, refs, trustExternal)
 	if err != nil {
 		return nil, err
 	}

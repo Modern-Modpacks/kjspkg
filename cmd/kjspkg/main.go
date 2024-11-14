@@ -33,6 +33,7 @@ var cli struct {
 	Dev       struct {
 		Run CDevRun `cmd:"Runs your package in a test minecraft instance"`
 	} `cmd:"" help:"Helper functions for developing KJSPKG packages"`
+	Gui CNotImplemented `cmd:"" hidden:""`
 }
 
 func main() {
