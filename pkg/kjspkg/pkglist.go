@@ -20,21 +20,6 @@ func GetPackageList() (map[string]PackageLocator, error) {
 		return packageListCache, nil
 	}
 
-	locators, err := plFetch()
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := plTransform(locators)
-	if err != nil {
-		return nil, err
-	}
-
-	packageListCache = list
-	return list, nil
-}
-
-func plFetch() (map[string]string, error) {
 	r, err := httpClient.Get(PackageList)
 	if err != nil || r.StatusCode != 200 {
 		return nil, commons.EN200(err, PackageList)
@@ -43,21 +28,22 @@ func plFetch() (map[string]string, error) {
 
 	var locators map[string]string
 	err = json.NewDecoder(r.Body).Decode(&locators)
-	return locators, err
-}
+	if err != nil {
+		return nil, err
+	}
 
-func plTransform(list map[string]string) (map[string]PackageLocator, error) {
-	var result = map[string]PackageLocator{}
-	for id, input := range list {
+	var list = map[string]PackageLocator{}
+	for id, input := range locators {
 		loc := PackageLocator{}
 		err := loc.FromString(id, input)
 		if err != nil {
 			return nil, err
 		}
-		result[id] = loc
+		list[id] = loc
 	}
 
-	return result, nil
+	packageListCache = list
+	return list, nil
 }
 
 type PackageLocator struct {
