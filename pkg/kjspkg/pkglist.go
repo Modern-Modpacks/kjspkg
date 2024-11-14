@@ -120,8 +120,6 @@ func (p *PackageLocator) URL() string {
 }
 
 func (p *PackageLocator) URLPath() string {
-	// TODO: what the fuck
-	// possibly make this smaller with tl.tizu.dev?
 	str := "https://raw.githubusercontent.com/" + p.User + "/" + p.Repository
 	if p.Branch != nil {
 		str = str + "/" + *p.Branch
