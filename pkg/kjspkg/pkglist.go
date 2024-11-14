@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/Modern-Modpacks/kjspkg/pkg/commons"
 )
 
 var PackageList = "https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json"
@@ -35,7 +37,7 @@ func GetPackageList() (map[string]PackageLocator, error) {
 func plFetch() (map[string]string, error) {
 	r, err := httpClient.Get(PackageList)
 	if err != nil || r.StatusCode != 200 {
-		return nil, EN200(err, PackageList)
+		return nil, commons.EN200(err, PackageList)
 	}
 	defer r.Body.Close()
 

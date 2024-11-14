@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/Modern-Modpacks/kjspkg/pkg/commons"
 )
 
 var StatsViews = "https://tizudev.vercel.app/automatin/api/1025316079226064966/kjspkg?stat=views"
@@ -16,7 +18,7 @@ var StatsDownloads = "https://tizudev.vercel.app/automatin/api/10253160792260649
 func GetPackage(ref PackageLocator, withStats bool) (Package, error) {
 	r, err := httpClient.Get(ref.URL())
 	if err != nil || r.StatusCode != 200 {
-		return Package{}, EN200(err, ref.URL())
+		return Package{}, commons.EN200(err, ref.URL())
 	}
 	defer r.Body.Close()
 

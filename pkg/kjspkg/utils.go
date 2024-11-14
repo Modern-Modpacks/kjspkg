@@ -1,11 +1,9 @@
 package kjspkg
 
 import (
-	"fmt"
 	"strings"
 
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
+	"github.com/Modern-Modpacks/kjspkg/pkg/commons"
 )
 
 var Logo = "    ⢀⣤⣶⣿⣿⣶⣤⡀    \n  ⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦  \n⢠⣄⡀⠉⠻⢿⣿⣿⣿⣿⡿⠟⠉⢀⣠⡄\n⢸⣿⣿⣷⣦⣀⠈⠙⠋⠁⣀⣴⣾⣿⣿⡇\n⢸⣿⣿⣿⣿⣿⣿  ⣿⣿⣿⣿⣿⣿⡇\n⢸⣿⣿⣿⣿⣿⣿  ⣿⣿⣿⣿⣿⣿⡇\n ⠙⠻⣿⣿⣿⣿  ⣿⣿⣿⣿⠟⠋ \n    ⠉⠻⢿  ⡿⠟⠉    "
@@ -16,7 +14,7 @@ func DepsJoin(deps []string) string {
 		if out != "" {
 			out = out + ", "
 		}
-		out = out + TitleCase(strings.TrimPrefix(dep, "mod:"))
+		out = out + commons.TitleCase(strings.TrimPrefix(dep, "mod:"))
 		if strings.HasPrefix(dep, "mod:") {
 			out = out + " (mod)"
 		}
@@ -25,18 +23,4 @@ func DepsJoin(deps []string) string {
 		return "none!"
 	}
 	return out
-}
-
-func TitleCase(input string) string {
-	input = strings.ReplaceAll(input, "-", " ")
-	input = strings.ReplaceAll(input, "_", " ")
-	titleCase := cases.Title(language.English)
-	return titleCase.String(input)
-}
-
-func EN200(err error, ctx string) error {
-	if err != nil {
-		return err
-	}
-	return fmt.Errorf("request did not return 200: %s", ctx)
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"g.tizu.dev/colr"
+	"github.com/Modern-Modpacks/kjspkg/pkg/commons"
 	"github.com/Modern-Modpacks/kjspkg/pkg/kjspkg"
 )
 
@@ -34,7 +35,7 @@ func (c *CPkg) Run(ctx *Context) error {
 	}
 
 	fmt.Printf("\n")
-	fmt.Printf(colr.Bold(colr.Blue("%s"))+" by "+colr.Blue("%s")+"\n", kjspkg.TitleCase(c.Package), pkg.Author)
+	fmt.Printf(colr.Bold(colr.Blue("%s"))+" by "+colr.Blue("%s")+"\n", commons.TitleCase(c.Package), pkg.Author)
 	fmt.Printf("%s\n", pkg.Description)
 	fmt.Printf("\n")
 	fmt.Printf(colr.Blue("Lookup:")+" https://kjspkglookup.modernmodpacks.site/#%s\n", c.Package)

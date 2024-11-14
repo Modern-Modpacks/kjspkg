@@ -1,5 +1,7 @@
 package kjspkg
 
+import "github.com/Modern-Modpacks/kjspkg/pkg/commons"
+
 type Config struct {
 	Installed map[string][]string `json:"installed"`
 
@@ -10,7 +12,7 @@ type Config struct {
 type ModLoader string
 
 func (s ModLoader) String() string {
-	return TitleCase(string(s))
+	return commons.TitleCase(string(s))
 }
 
 var ModLoaders = []ModLoader{MLForge, MLFabric, MLQuilt, MLNeoforge}

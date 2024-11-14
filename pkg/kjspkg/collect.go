@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/Modern-Modpacks/kjspkg/pkg/commons"
 )
 
 // TODO: refactor this; gcast, trust me, this was worse
@@ -39,9 +41,9 @@ func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, tru
 	if !slices.Contains(pkg.ModLoaders, cfg.ModLoader) {
 		loaders := []string{}
 		for _, l := range pkg.ModLoaders {
-			loaders = append(loaders, TitleCase(string(l)))
+			loaders = append(loaders, commons.TitleCase(string(l)))
 		}
-		return nil, fmt.Errorf("not available for %s, only %s", TitleCase(string(cfg.ModLoader)), strings.Join(loaders, ", "))
+		return nil, fmt.Errorf("not available for %s, only %s", commons.TitleCase(string(cfg.ModLoader)), strings.Join(loaders, ", "))
 	}
 
 	for _, dep := range pkg.Incompatibilities {
