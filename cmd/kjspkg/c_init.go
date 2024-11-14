@@ -7,7 +7,10 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
-type CInit struct{}
+type CInit struct {
+	Version   int              `help:"Version to use (as number, 1.16 -> 16 - 10 -> 6)"`
+	Modloader kjspkg.ModLoader `help:"Mod loader (forge, fabric, quilt, neoforge)"`
+}
 
 // TODO: god
 func (c *CInit) Run(ctx *Context) error {
@@ -20,35 +23,27 @@ func (c *CInit) Run(ctx *Context) error {
 
 	cfg := kjspkg.DefaultConfig()
 
-	var gamever int
-	err := huh.NewSelect[int]().
-		Title("Pick a game version").Options((func() []huh.Option[int] {
-		opts := []huh.Option[int]{}
+	err := NewSelect("Pick a game version", func(opts *[]huh.Option[int]) {
 		for display, id := range kjspkg.Versions {
-			opts = append(opts, huh.NewOption(display, id))
+			*opts = append(*opts, huh.NewOption(display, id))
 		}
-		return opts
-	}())...).Value(&gamever).WithTheme(huh.ThemeBase16()).Run()
+	}, &c.Version)
 	if err != nil {
 		return err
 	}
-	info("Game version: %s", kjspkg.GetVersionString(gamever))
-	cfg.Version = gamever
+	info("Game version: %s", kjspkg.GetVersionString(c.Version))
+	cfg.Version = c.Version
 
-	var modloader kjspkg.ModLoader
-	err = huh.NewSelect[kjspkg.ModLoader]().
-		Title("Pick a mod loader").Options((func() []huh.Option[kjspkg.ModLoader] {
-		opts := []huh.Option[kjspkg.ModLoader]{}
+	err = NewSelect("Pick a mod loader", func(opts *[]huh.Option[kjspkg.ModLoader]) {
 		for _, loader := range kjspkg.ModLoaders {
-			opts = append(opts, huh.NewOption(loader.String(), loader))
+			*opts = append(*opts, huh.NewOption(loader.String(), loader))
 		}
-		return opts
-	}())...).Value(&modloader).WithTheme(huh.ThemeBase16()).Run()
+	}, &c.Modloader)
 	if err != nil {
 		return err
 	}
-	info("Mod loader: %s", modloader.String())
-	cfg.ModLoader = modloader
+	info("Mod loader: %s", c.Modloader.String())
+	cfg.ModLoader = c.Modloader
 
 	err = kjspkg.SetConfig(ctx.Path, cfg)
 	if err != nil {
