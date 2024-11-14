@@ -5,7 +5,7 @@ import (
 )
 
 var Versions = map[string]int{
-	// TODO: idk why I commented this out but I think it broke something "1.12": 2,
+	"1.12": 2,
 	"1.16": 6,
 	"1.18": 8,
 	"1.19": 9,
