@@ -70,6 +70,20 @@ func GetPackage(ref PackageLocator, withStats bool) (Package, error) {
 	return pkg, nil
 }
 
+type Package struct {
+	Author      string `json:"author"`
+	Description string `json:"description"`
+	Readme      string `json:"readme"`
+
+	Versions          []int
+	ModLoaders        []ModLoader
+	Dependencies      []string
+	Incompatibilities []string
+
+	Views     int
+	Downloads int
+}
+
 func PackageFromPath(path string) (Package, error) {
 	pkg := Package{}
 	filePath := filepath.Join(path, ".kjspkg")
@@ -92,18 +106,4 @@ func PackageFromPath(path string) (Package, error) {
 	}
 
 	return pkg, nil
-}
-
-type Package struct {
-	Author      string `json:"author"`
-	Description string `json:"description"`
-	Readme      string `json:"readme"`
-
-	Versions          []int
-	ModLoaders        []ModLoader
-	Dependencies      []string
-	Incompatibilities []string
-
-	Views     int
-	Downloads int
 }
