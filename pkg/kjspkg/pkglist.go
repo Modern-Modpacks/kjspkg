@@ -95,6 +95,29 @@ func (p *PackageLocator) FromString(id, input string) error {
 	return nil
 }
 
+// Obtains a package id from a pointer (that is to say, a string like 'kjspkg:amogus' or 'github:...')
+func (p *PackageLocator) FromPointer(id string, refs map[string]PackageLocator, trustExternal bool) error {
+	if strings.HasPrefix(id, "github:") {
+		l := PackageLocator{}
+		err := l.FromString("", strings.TrimPrefix(id, "github:"))
+		if err != nil {
+			return err
+		}
+		if !trustExternal {
+			return fmt.Errorf("you may not use external packages unless you trust them")
+		}
+		*p = l
+	} else {
+		id = strings.TrimPrefix(id, "kjspkg:")
+		r, ok := refs[id]
+		if !ok {
+			return fmt.Errorf("cannot find package: %s", id)
+		}
+		*p = r
+	}
+	return nil
+}
+
 func (p *PackageLocator) String() string {
 	str := p.User + "/" + p.Repository
 	if p.Path != nil {

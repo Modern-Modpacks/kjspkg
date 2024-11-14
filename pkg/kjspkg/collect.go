@@ -11,24 +11,10 @@ import (
 func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, trustExternal, update bool, mods map[string]string) (map[string]PackageLocator, error) {
 	toInstall := map[string]PackageLocator{}
 
-	var ref PackageLocator
-	if strings.HasPrefix(id, "github:") {
-		l := PackageLocator{}
-		err := l.FromString("", strings.TrimPrefix(id, "github:"))
-		if err != nil {
-			return nil, err
-		}
-		if !trustExternal {
-			return nil, fmt.Errorf("you may not use external packages unless you trust them")
-		}
-		ref = l
-	} else {
-		id = strings.TrimPrefix(id, "kjspkg:")
-		r, ok := refs[id]
-		if !ok {
-			return nil, fmt.Errorf("cannot find package: %s", id)
-		}
-		ref = r
+	ref := PackageLocator{}
+	err := ref.FromPointer(id, refs, trustExternal)
+	if err != nil {
+		return nil, err
 	}
 
 	// TODO: make this better
