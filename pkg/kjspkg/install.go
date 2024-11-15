@@ -137,7 +137,6 @@ func InstallCopy(path string, loc PackageLocator) ([]string, error) {
 			}
 
 			virtpath := filepath.Join(path, name, relpath)
-			println(virtpath)
 			if _, err := os.Stat(virtpath); err == nil {
 				return fmt.Errorf("asset file exists: %s", virtpath)
 			}
