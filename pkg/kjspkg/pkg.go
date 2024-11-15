@@ -75,13 +75,13 @@ type Package struct {
 	Description string `json:"description"`
 	Readme      string `json:"readme"`
 
-	Versions          []int
-	ModLoaders        []ModLoader
-	Dependencies      []string
-	Incompatibilities []string
+	Versions          []int       `json:"versions"`
+	ModLoaders        []ModLoader `json:"modloaders"`
+	Dependencies      []string    `json:"dependencies"`
+	Incompatibilities []string    `json:"incompatabilities"`
 
-	Views     int
-	Downloads int
+	Views     int `json:"views"`
+	Downloads int `json:"downloads"`
 }
 
 func PackageFromPath(path string) (Package, error) {

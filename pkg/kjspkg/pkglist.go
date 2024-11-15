@@ -46,11 +46,11 @@ func GetPackageList() (map[string]PackageLocator, error) {
 }
 
 type PackageLocator struct {
-	Id         string
-	User       string
-	Repository string
-	Branch     *string
-	Path       *string
+	Id         string  `json:"id"`
+	User       string  `json:"user"`
+	Repository string  `json:"repository"`
+	Branch     *string `json:"branch"`
+	Path       *string `json:"path"`
 }
 
 func PackageLocatorFromString(id, input string) (PackageLocator, error) {
