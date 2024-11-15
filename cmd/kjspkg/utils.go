@@ -7,8 +7,18 @@ import (
 	"github.com/Modern-Modpacks/kjspkg/pkg/kjspkg"
 )
 
-func info(format string, a ...any) { fmt.Printf(colr.Blue(":: ")+format+"\n", a...) }
-func warn(format string, a ...any) { fmt.Printf(colr.Yellow(":: ")+format+"\n", a...) }
+var doLog = true
+
+func info(format string, a ...any) {
+	if doLog {
+		fmt.Printf(colr.Blue(":: ")+format+"\n", a...)
+	}
+}
+func warn(format string, a ...any) {
+	if doLog {
+		fmt.Printf(colr.Yellow(":: ")+format+"\n", a...)
+	}
+}
 
 func remove[T comparable](slice []T, s int) []T {
 	return append(slice[:s], slice[s+1:]...)

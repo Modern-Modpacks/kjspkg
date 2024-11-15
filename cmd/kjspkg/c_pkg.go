@@ -16,6 +16,10 @@ type CPkg struct {
 }
 
 func (c *CPkg) Run(ctx *Context) error {
+	if c.Script {
+		doLog = false
+	}
+
 	pkg, loc, err := LoadPackageById(c.Package, true)
 	if err != nil {
 		return err
@@ -35,7 +39,7 @@ func (c *CPkg) Run(ctx *Context) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s\n", string(b))
+		fmt.Printf("%s", string(b))
 		return nil
 	}
 
