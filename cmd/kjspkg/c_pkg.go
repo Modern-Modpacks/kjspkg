@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -30,8 +31,12 @@ func (c *CPkg) Run(ctx *Context) error {
 	}
 
 	if c.Script {
-
-		// fmt.Printf(, a ...any)
+		b, err := json.Marshal(pkg)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s\n", string(b))
+		return nil
 	}
 
 	fmt.Printf("\n")
