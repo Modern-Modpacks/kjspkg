@@ -10,6 +10,10 @@ import (
 func info(format string, a ...any) { fmt.Printf(colr.Blue(":: ")+format+"\n", a...) }
 func warn(format string, a ...any) { fmt.Printf(colr.Yellow(":: ")+format+"\n", a...) }
 
+func remove[T comparable](slice []T, s int) []T {
+	return append(slice[:s], slice[s+1:]...)
+}
+
 func LoadLocators() (map[string]kjspkg.PackageLocator, error) {
 	var packages map[string]kjspkg.PackageLocator
 	packages, err := kjspkg.GetPackageList()

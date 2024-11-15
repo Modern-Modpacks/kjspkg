@@ -16,6 +16,7 @@ type CInstall struct {
 	Packages      []string `arg:"" help:"The packages to install ('github:author/repo$path@branch' syntax supported)"`
 	TrustExternal bool     `help:"If GitHub packages should be trusted (experimental! updates are only partially supported)"`
 	NoModCheck    bool     `help:"If mod dependency check should be skipped"`
+	Skipmissing   bool     `help:"Skips dependencies that can't be found"`
 	Update        bool     `help:"If packages already downloaded should be updated (same as 'update')"`
 }
 
@@ -42,7 +43,7 @@ func (c *CInstall) Run(ctx *Context) error {
 	toInstall := map[string]kjspkg.PackageLocator{}
 	info("Resolving dependencies")
 	for _, id := range c.Packages {
-		list, err := kjspkg.CollectPackages(refs, cfg, id, c.TrustExternal, c.Update, mods)
+		list, err := kjspkg.CollectPackages(refs, cfg, id, c.TrustExternal, c.Update, mods, c.Skipmissing)
 		if err != nil {
 			return err
 		}

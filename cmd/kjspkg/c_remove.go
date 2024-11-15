@@ -10,7 +10,8 @@ import (
 )
 
 type CRemove struct {
-	Packages []string `arg:"" help:"The packages to remove"`
+	Packages    []string `arg:"" help:"The packages to remove"`
+	Skipmissing bool     `help:"Skips removals of packages that can't be found"`
 }
 
 func (c *CRemove) Run(ctx *Context) error {
@@ -20,9 +21,11 @@ func (c *CRemove) Run(ctx *Context) error {
 	}
 
 	info("Removing")
-	for _, id := range c.Packages {
+	for i, id := range c.Packages {
 		_, ok := cfg.Installed[id]
-		if !ok {
+		if !ok && c.Skipmissing {
+			c.Packages = remove(c.Packages, i)
+		} else if !ok {
 			return fmt.Errorf("package not installed: %s", id)
 		}
 	}

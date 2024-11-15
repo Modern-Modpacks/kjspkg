@@ -11,6 +11,7 @@ type CUpdate struct {
 	Packages      []string `optional:"" arg:"" help:"The packages to update ('github:author/repo$path@branch' syntax supported)"`
 	TrustExternal bool     `help:"If GitHub packages should be trusted"`
 	NoModCheck    bool     `help:"If mod dependency check should be skipped (experimental)"`
+	Skipmissing   bool     `help:"Skips dependencies that can't be found"`
 	All           bool     `help:"Update all packages ('update *'/'updateall' use this)"`
 }
 
@@ -37,6 +38,7 @@ func (c *CUpdate) Run(ctx *Context) error {
 		Packages:      packages,
 		TrustExternal: c.TrustExternal,
 		NoModCheck:    c.NoModCheck,
+		Skipmissing:   c.Skipmissing,
 		Update:        true,
 	}
 	return cmd.Run(ctx)
@@ -61,6 +63,7 @@ func (c *CUpdate) AfterApply() error {
 type CUpdateAll struct {
 	TrustExternal bool `help:"If GitHub packages should be trusted"`
 	NoModCheck    bool `help:"If mod dependency check should be skipped (experimental)"`
+	Skipmissing   bool `help:"Skips dependencies that can't be found"`
 }
 
 func (c *CUpdateAll) Run(ctx *Context) error {
@@ -68,6 +71,7 @@ func (c *CUpdateAll) Run(ctx *Context) error {
 		Packages:      []string{"*"},
 		TrustExternal: c.TrustExternal,
 		NoModCheck:    c.NoModCheck,
+		Skipmissing:   c.Skipmissing,
 	}
 	return cmd.Run(ctx)
 }

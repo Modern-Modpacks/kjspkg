@@ -9,11 +9,15 @@ import (
 )
 
 // *mods* may be nil, in which case mod check gets ignored
-func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, trustExternal, update bool, mods map[string]string) (map[string]PackageLocator, error) {
+// skipMissing == true may return partial dependency trees or an empty array if they can't be resolved.
+func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, trustExternal, update bool, mods map[string]string, skipMissing bool) (map[string]PackageLocator, error) {
 	toInstall := map[string]PackageLocator{}
 
 	ref, err := PackageLocatorFromPointer(id, refs, trustExternal)
 	if err != nil {
+		if skipMissing {
+			return toInstall, nil
+		}
 		return nil, err
 	}
 
@@ -25,6 +29,9 @@ func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, tru
 
 	pkg, err := GetPackage(ref, false)
 	if err != nil {
+		if skipMissing {
+			return toInstall, nil
+		}
 		return nil, err
 	}
 
@@ -47,7 +54,7 @@ func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, tru
 	for _, dep := range pkg.Dependencies {
 		if !strings.HasPrefix(dep, "mod:") {
 			if _, ok := cfg.Installed[dep]; !ok {
-				deps, err := CollectPackages(refs, cfg, dep, trustExternal, update, mods)
+				deps, err := CollectPackages(refs, cfg, dep, trustExternal, update, mods, skipMissing)
 				if err != nil {
 					return nil, err
 				}
