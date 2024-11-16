@@ -126,7 +126,7 @@ func (c *CDevDist) Run(ctx *Context) error {
 		return err
 	}
 
-	info("Let's get migrating!")
+	info("Just a moment, creating your package...")
 
 	targetDir := filepath.Join(ctx.Path, c.Target)
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
@@ -170,6 +170,6 @@ func (c *CDevDist) Run(ctx *Context) error {
 		return fmt.Errorf("failed to write .kjspkg file: %w", err)
 	}
 
-	info("Package created at kjspkg/%s", targetDir)
+	info("Package created at %s", targetDir)
 	return nil
 }
