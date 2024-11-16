@@ -163,11 +163,11 @@ func (c *CDevDist) Run(ctx *Context) error {
 
 	pkgBytes, err := json.MarshalIndent(c.Package, "", "  ")
 	if err != nil {
-		return fmt.Errorf("failed to marshal package config: %w", err)
+		return err
 	}
 
 	if err := os.WriteFile(filepath.Join(targetDir, ".kjspkg"), pkgBytes, 0644); err != nil {
-		return fmt.Errorf("failed to write .kjspkg file: %w", err)
+		return err
 	}
 
 	info("Package created at %s", targetDir)
