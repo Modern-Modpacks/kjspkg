@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"g.tizu.dev/colr"
+	"github.com/Modern-Modpacks/kjspkg/pkg/kjspkg"
 	"github.com/alecthomas/kong"
 )
 
@@ -17,6 +18,7 @@ var cli struct {
 	Verbose bool   `help:"Print verbose"`
 	Quiet   bool   `help:"No non-error output" short:"q" hidden:""`
 	Path    string `help:"Path to KubeJS directory (defaults to current)" default:"." type:"existingdir"`
+	Source  string `help:"URL source to package list" type:"url"`
 
 	Install   CInstall        `cmd:"" help:"Installs packages" aliases:"download"`
 	Remove    CRemove         `cmd:"" help:"Removes packages" aliases:"uninstall"`
@@ -53,6 +55,9 @@ func main() {
 	}
 	if cli.Quiet {
 		os.Stdout.Close()
+	}
+	if cli.Source != "" {
+		kjspkg.PackageList = cli.Source
 	}
 
 	err := ctx.Run(&Context{
