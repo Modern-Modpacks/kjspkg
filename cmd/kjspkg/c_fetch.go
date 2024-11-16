@@ -35,9 +35,9 @@ func (c *CFetch) Run(ctx *Context) error {
 
 	for i := 0; i < max(len(logoLines), len(infoLines)+1); i++ {
 		if len(logoLines) > i {
-			fmt.Printf(colr.Purple(logoLines[i] + "    "))
+			fmt.Print(colr.Purple(logoLines[i] + "    "))
 		} else {
-			fmt.Printf(colr.Purple(strings.Repeat(" ", utf8.RuneCountInString(logoLines[1])+2)))
+			fmt.Print(colr.Purple(strings.Repeat(" ", utf8.RuneCountInString(logoLines[1])+2)))
 		}
 		if i == 0 {
 			fmt.Printf(colr.Bold("KJSPKG")+colr.Dim(" @ %s"), ctx.Path)

@@ -17,7 +17,7 @@ func (c *CInit) Run(ctx *Context) error {
 		return fmt.Errorf("are you sure this is the kubejs directory?")
 	}
 	if kjspkg.HasConfig(ctx.Path) {
-		return fmt.Errorf("config already exists, use 'uninit' instead!")
+		return fmt.Errorf("config already exists, use 'uninit' instead")
 	}
 
 	cfg := kjspkg.DefaultConfig()

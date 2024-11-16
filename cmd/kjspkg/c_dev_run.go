@@ -16,7 +16,7 @@ type CDevRun struct {
 func (c *CDevRun) Run(ctx *Context) error {
 	ver, ok := kjspkg.Versions[c.Version]
 	if !ok {
-		return fmt.Errorf("Not a game version, expected version like '1.18'")
+		return fmt.Errorf("not a game version, expected version like '1.18'")
 	}
 
 	pkg, err := kjspkg.PackageFromPath(ctx.Path)
@@ -25,7 +25,7 @@ func (c *CDevRun) Run(ctx *Context) error {
 	}
 
 	_, _ = ver, pkg
-	fmt.Printf(colr.Red("not implemented\n"))
+	fmt.Print(colr.Red("not implemented\n"))
 
 	return nil
 }
