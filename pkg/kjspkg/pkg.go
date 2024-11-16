@@ -71,17 +71,17 @@ func GetPackage(ref PackageLocator, withStats bool) (Package, error) {
 }
 
 type Package struct {
-	Author      string `json:"author"`
-	Description string `json:"description"`
-	Readme      string `json:"readme"`
+	Author      string `json:"author" help:"Author(s) of the package"`
+	Description string `json:"description" help:"Description of the package"`
+	// Readme      string `json:"readme"`
 
-	Versions          []int       `json:"versions"`
-	ModLoaders        []ModLoader `json:"modloaders"`
-	Dependencies      []string    `json:"dependencies"`
-	Incompatibilities []string    `json:"incompatabilities"`
+	Versions          []int       `json:"versions" help:"Game versions the package supports"`
+	ModLoaders        []ModLoader `json:"modloaders" help:"Mod loaders the package supports"`
+	Dependencies      []string    `json:"dependencies" help:"Which dependencies to include in the package"`
+	Incompatibilities []string    `json:"incompatabilities" help:"Which dependencies to include in the package"`
 
-	Views     int `json:"views"`
-	Downloads int `json:"downloads"`
+	Views     int `json:"-" hidden:""`
+	Downloads int `json:"-" hidden:""`
 }
 
 func PackageFromPath(path string) (Package, error) {

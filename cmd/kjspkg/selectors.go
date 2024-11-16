@@ -12,6 +12,7 @@ func NewSelect[T comparable](
 	title string,
 	getOptions func(opts *[]huh.Option[T]),
 	selected *T,
+	description string,
 ) error {
 	options := []huh.Option[T]{}
 	getOptions(&options)
@@ -22,13 +23,15 @@ func NewSelect[T comparable](
 		}
 	}
 
-	err := huh.NewSelect[T]().
+	sel := huh.NewSelect[T]().
 		Title(title).
 		Options(options...).
-		Value(selected).
-		WithTheme(huh.ThemeBase16()).
-		Run()
-	return err
+		Value(selected)
+	if description != "" {
+		sel.Description(description)
+	}
+
+	return sel.WithTheme(huh.ThemeBase16()).Run()
 }
 
 // NewMultiSelect is a wrapper function that displays a selection prompt only if
@@ -37,26 +40,60 @@ func NewMultiSelect[T comparable](
 	title string,
 	getOptions func(opts *[]huh.Option[T]),
 	selected *[]T,
+	description string,
+	preselectedEmpty T,
+	validate func(input []T) error,
 ) error {
 	options := []huh.Option[T]{}
 	getOptions(&options)
 
-	allValid := true
-	for _, opt := range *selected {
-		if !slices.ContainsFunc(options, func(e huh.Option[T]) bool { return e.Value == opt }) {
-			allValid = false
-			break
+	if len(*selected) == 1 {
+		sel := *selected
+		if sel[0] == preselectedEmpty {
+			return nil
 		}
 	}
-	if allValid {
+
+	if len(*selected) > 0 {
+		allValid := true
+		for _, opt := range *selected {
+			if !slices.ContainsFunc(options, func(e huh.Option[T]) bool { return e.Value == opt }) {
+				allValid = false
+				break
+			}
+		}
+		if allValid {
+			return nil
+		}
+	}
+
+	sel := huh.NewMultiSelect[T]().
+		Title(title).
+		Options(options...).
+		Validate(validate).
+		Height(9). // 8
+		Value(selected)
+	if description != "" {
+		sel.Description(description)
+	}
+
+	return sel.WithTheme(huh.ThemeBase16()).Run()
+}
+
+// NewInput is a wrapper function that displays a selection prompt only if
+// the provided variable isn't empty and can be validated.
+func NewInput(
+	title string,
+	validate func(input string) error,
+	selected *string,
+) error {
+	if *selected != "" && validate(*selected) == nil {
 		return nil
 	}
 
-	err := huh.NewMultiSelect[T]().
+	sel := huh.NewInput().
 		Title(title).
-		Options(options...).
 		Value(selected).
-		WithTheme(huh.ThemeBase16()).
-		Run()
-	return err
+		Validate(validate)
+	return sel.WithTheme(huh.ThemeBase16()).Run()
 }

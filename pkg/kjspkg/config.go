@@ -15,13 +15,11 @@ func (s ModLoader) String() string {
 	return commons.TitleCase(string(s))
 }
 
-var ModLoaders = []ModLoader{MLForge, MLFabric, MLQuilt, MLNeoforge}
+var ModLoaders = []ModLoader{MLForge, MLFabric}
 
 const (
-	MLForge    ModLoader = "forge"
-	MLFabric             = "fabric"
-	MLQuilt              = "quilt"
-	MLNeoforge           = "neoforge"
+	MLForge  ModLoader = "forge"
+	MLFabric ModLoader = "fabric"
 )
 
 func DefaultConfig() *Config {

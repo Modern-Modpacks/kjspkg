@@ -26,7 +26,7 @@ func (c *CInit) Run(ctx *Context) error {
 		for display, id := range kjspkg.Versions {
 			*opts = append(*opts, huh.NewOption(display, id))
 		}
-	}, &c.Version)
+	}, &c.Version, "")
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (c *CInit) Run(ctx *Context) error {
 		for _, loader := range kjspkg.ModLoaders {
 			*opts = append(*opts, huh.NewOption(loader.String(), loader))
 		}
-	}, &c.Modloader)
+	}, &c.Modloader, "")
 	if err != nil {
 		return err
 	}
