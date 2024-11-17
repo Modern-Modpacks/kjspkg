@@ -15,6 +15,8 @@ require (
 	github.com/lithammer/fuzzysearch v1.1.8
 )
 
+require github.com/otiai10/copy v1.14.0
+
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/atotto/clipboard v0.1.4 // indirect

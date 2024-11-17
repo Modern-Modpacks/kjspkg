@@ -14,6 +14,9 @@ type ModLoader string
 func (s ModLoader) String() string {
 	return commons.TitleCase(string(s))
 }
+func (s ModLoader) Identifier() string {
+	return string(s)
+}
 
 var ModLoaders = []ModLoader{MLForge, MLFabric}
 

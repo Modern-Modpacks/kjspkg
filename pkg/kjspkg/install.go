@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	cp "github.com/otiai10/copy"
 )
 
 // This is the recommended way to install packages.
@@ -101,20 +103,34 @@ func InstallBranch(path string, loc PackageLocator) error {
 	// TODO: migrate to 'git switch'
 	cmd := exec.Command("git", "checkout", *loc.Branch)
 	cmd.Dir = filepath.Join(path, "tmp", loc.Id)
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-	return cmd.Wait()
+	return cmd.Run()
 }
 
-func InstallCopy(path string, loc PackageLocator) ([]string, error) {
-	repoPath := filepath.Join(path, "tmp", loc.Id)
-	if loc.Path != nil && !strings.Contains(*loc.Path, "..") {
-		repoPath = filepath.Join(repoPath, *loc.Path)
+type LocEsque interface {
+	PackageLocator | string
+}
+
+func InstallCopy[L LocEsque](path string, loc L) ([]string, error) {
+	id, repoPath := "", ""
+	switch l := any(loc).(type) {
+	case PackageLocator:
+		id = l.Id
+		repoPath = filepath.Join(path, "tmp", l.Id)
+		if l.Path != nil && !strings.Contains(*l.Path, "..") {
+			repoPath = filepath.Join(repoPath, *l.Path)
+		}
+	case string:
+		id = filepath.Base(l)
+		repoPath = filepath.Join(path, "tmp", id)
+		os.MkdirAll(repoPath, 0744)
+		err := cp.Copy(l, repoPath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	for _, name := range ScriptDirs {
-		root, target := filepath.Join(repoPath, name), filepath.Join(path, name, ".kjspkg", loc.Id)
+		root, target := filepath.Join(repoPath, name), filepath.Join(path, name, ".kjspkg", id)
 		os.MkdirAll(root, 0744) // TODO: creates dir so that I don't have to check if it exists or not
 		err := os.Rename(root, target)
 		if err != nil {

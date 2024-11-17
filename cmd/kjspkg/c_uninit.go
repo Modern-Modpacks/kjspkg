@@ -21,9 +21,10 @@ func (c *CUninit) Run(ctx *Context) error {
 		return fmt.Errorf("please use --confirm to continue")
 	}
 
-	cfg, err := kjspkg.GetConfig(ctx.Path, false)
+	cfg, err := kjspkg.GetConfig(ctx.Path, true)
 	if err != nil {
-		return err
+		warn("oopsie woopsie! %v", err)
+		return nil
 	}
 
 	info("Removing packages")
