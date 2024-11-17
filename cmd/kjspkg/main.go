@@ -33,6 +33,7 @@ var cli struct {
 	Uninit    CUninit         `cmd:"" help:"Remove all KJSPKG-related things in your project"`
 	Reload    CNotImplemented `cmd:"" hidden:"" aliases:"refresh"`
 	Dev       struct {
+		Init CDevInit        `cmd:"" help:"Initialize a new KJSPKG package"`
 		Run  CDevRun         `cmd:"" help:"Runs your package in a test Minecraft instance"`
 		Dist CDevDist        `cmd:"" help:"Creates a package from your packs' KubeJS folder"`
 		Test CNotImplemented `cmd:"" hidden:""`
