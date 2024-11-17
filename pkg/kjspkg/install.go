@@ -127,6 +127,9 @@ func InstallCopy(path string, loc PackageLocator) ([]string, error) {
 		root := filepath.Join(repoPath, name)
 		os.MkdirAll(root, 0744) // TODO: creates dir so that I don't have to check if it exists or not
 		err := filepath.WalkDir(root, func(longpath string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
 			if d.IsDir() {
 				return nil
 			}
