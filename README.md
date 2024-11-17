@@ -1,64 +1,60 @@
-# KJSPKG
+# <img alt="icon" height="32" src="https://user-images.githubusercontent.com/79367505/227798123-5454e9b1-b39b-4c45-9e02-e18f2e807585.png"> KJSPKG
 
-A simple package manager for KubeJS.
+A simple package manager for KubeJS written in Go.
 
-[![contributions](https://github.com/Modern-Modpacks/kjspkg/assets/79367505/d2519e70-ce96-4bbc-b35b-af3e674bf421)](https://github.com/Modern-Modpacks/kjspkg#adding-your-own-package)
-[![lat](https://img.shields.io/badge/approved%20by-lat-c374e4?style=for-the-badge&labelColor=480066)](https://github.com/user-attachments/assets/0df64919-6333-447e-9869-c270138941bd)
+[![Contributions welcome](https://github.com/Modern-Modpacks/kjspkg/assets/79367505/d2519e70-ce96-4bbc-b35b-af3e674bf421)](https://github.com/Modern-Modpacks/kjspkg#adding-your-own-package)
+[![Approved by latvian.dev](https://img.shields.io/badge/approved%20by-lat-c374e4?style=for-the-badge&labelColor=480066)](https://github.com/user-attachments/assets/0df64919-6333-447e-9869-c270138941bd)
 
-![logo](https://user-images.githubusercontent.com/79367505/227798123-5454e9b1-b39b-4c45-9e02-e18f2e807585.png)
+**The Go API exposed at github.com/Modern-Modpacks/kjspkg/pkg/kjspkg is not
+stable. It is not recommended to use it just yet.**
 
-_Work in progress_
+## Installation & Update
 
-**The Go API exposed at github.com/Modern-Modpacks/kjspkg/pkg/kjspkg is not stable. It is not recommended to use it just yet.**
+### Install script
 
-<!-- ## Installation & Update
-
-### Requirements
-
-* [Python 3.8](https://www.python.org/) (or higher)
-* Pip
-* [Git](https://git-scm.com/)
-* [Curl](https://curl.se/) (probably pre-installed)
-
-### Linux
+This script will install KJSPKG to your system and add it to your PATH.
 
 ```sh
-curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.sh | sh
+# On Linux
+curl -fsSL https://g.tizu.dev/mm.kj/install.sh?r | bash
+# On Windows
+powershell -c "irm https://g.tizu.dev/mm.kj/install.ps1?r | iex"
 ```
 
-### Windows
+<!-- ### Arch Linux
 
-Download [this bat file](https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.bat) and run it
+KJSPKG is available in the AUR as `kjspkg-git`.
 
-or use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
+```sh
+paru -S kjspkg-git
+``` -->
+
+<!-- ### winget
+
+KJSPKG is available in the winget repository as `modernmodpacks.kjspkg`.
+
+```sh
+winget install modernmodpacks.kjspkg
+``` -->
+
+### Using Go
+
+This requires a working Go installation of at least 1.23.2.
+
+```sh
+go install github.com/Modern-Modpacks/kjspkg/cmd/kjspkg@latest
+```
 
 ## Usage
 
-Installing packages:
+KJSPKG comes with extensive help text, so you can just run `kjspkg` to see all
+the commands and options available. You may also use `--help` after any command
+to get more information about it.
 
 ```sh
 kjspkg install [package] [package]
-kjspkg install kjspkg:[package]
-kjspkg install carbon:[package] # CarbonJS compatibility (https://github.com/carbon-kjs)
-kjspkg install github:[author]/[package] # External packages
-```
-
-Removing packages:
-
-```sh
 kjspkg remove [package] [package]
-```
-
-Updating packages:
-
-```sh
 kjspkg update [package] [package]
-```
-
-More info in the help page:
-
-```sh
-kjspkg help
 ```
 
 ## Adding your own package
@@ -100,8 +96,6 @@ kjspkg help
 
 ![Version list](https://github.com/user-attachments/assets/5a3b8e3a-bd91-456e-8443-bbffa894a38f)
 
-(Thanks tizu.dev on discord for the figma template)
-
 Tested means that the version is confirmed to be working;
 
 Not tested means that the version should work, but hasn't been tested. Feel free to test it yourself and let us know so we'll update the readme.
@@ -112,4 +106,4 @@ Partial support means that the version is supported, but not as much as the full
 
 No support means that the version works, but any issues that you have with it won't be fixed.
 
-Borked means it doesn't work lmao. -->
+Borked means it doesn't work lmao.
