@@ -61,20 +61,8 @@ kjspkg update [package] [package]
 
 1. Create a repository containing your scripts and assets
 2. [Don't forget to license your code](https://choosealicense.com/)
-3. Add a file to your repo named `.kjspkg` and format it like this:
-
-    ```json
-    {
-        "author": "<your_name>",
-        "description": "<description>",
-
-        "versions": [<Version key numbers (see the numbers in parentheses in the table below, or use this formula: "version title = 1.(version key + 10).whatever"). Can contain multiple numbers>],
-        "modloaders": [<Modloaders ("fabric"/"forge", "fabric" will for quilt as well)>. Can contain multiple modloaders],
-        "dependencies": [<Package names that your package depends on, blank if none. To depend on mods add "mod:" before the mod id>],
-        "incompatibilities": [<Package names that your package is incompatible with, blank if none. Incompatible mods are also supported (use the same syntax)>]
-    }
-    ```
-
+3. Create an empty directory and run `kjspkg dev init`
+4. Do your thing and create a repository with the code
 4. Fork this repo
 5. Clone it
 6. Add your package to `pkgs.json` file. Format it like this: `"your_package_id": "your_github_name/your_repo_name[$path/to/your/package/directory][@branch_name]",`
@@ -83,6 +71,7 @@ kjspkg update [package] [package]
     * Branch is `main` by default
 7. Create a pull request
 8. Wait for it to be accepted
+9. profit <!-- im not even kidding, copilot wrote this -->
 
 ### KJSPKG badges
 
