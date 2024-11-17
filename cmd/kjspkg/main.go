@@ -1,3 +1,11 @@
+// Hello gcast!
+// I hope you're well.
+// I'm sorry for the mess. I'll try to clean it up.
+// alas, it is what it is. thanks for your patience.
+// the entire cmd/kjspkg directory is a shithole.
+// all the best,
+// - mr erik "tizu" erikson
+
 package main
 
 import (
