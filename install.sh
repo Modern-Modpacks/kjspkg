@@ -29,4 +29,4 @@ if [ $? -ne 0 ]; then
 fi
 
 sudo chmod +x /usr/local/bin/kjspkg
-echo -e "$INFO Done! Run \`kjspkg\` to get started"
+echo -e "$INFO Done! Run 'kjspkg' to get started"
