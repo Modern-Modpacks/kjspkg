@@ -24,7 +24,7 @@ func GetConfig(path string, noKubeOk bool) (*Config, error) {
 	}
 
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-		return nil, fmt.Errorf(".kjspkg file not found")
+		return nil, fmt.Errorf("no KJSPKG instance, use 'init' to create one")
 	}
 
 	data, err := os.ReadFile(configFilePath)
