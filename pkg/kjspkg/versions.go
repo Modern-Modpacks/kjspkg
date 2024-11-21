@@ -4,6 +4,7 @@ import (
 	"strconv"
 )
 
+var VersionsInOrder = []string{"1.12", "1.16", "1.18", "1.19", "1.20", "1.21"}
 var Versions = map[string]int{
 	"1.12": 2,
 	"1.16": 6,

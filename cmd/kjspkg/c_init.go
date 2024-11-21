@@ -23,8 +23,8 @@ func (c *CInit) Run(ctx *Context) error {
 	cfg := kjspkg.DefaultConfig()
 
 	err := NewSelect("Pick a game version", func(opts *[]huh.Option[int]) {
-		for display, id := range kjspkg.Versions {
-			*opts = append(*opts, huh.NewOption(display, id))
+		for _, ver := range kjspkg.VersionsInOrder {
+			*opts = append(*opts, huh.NewOption(ver, kjspkg.Versions[ver]))
 		}
 	}, &c.Version, "")
 	if err != nil {
@@ -35,7 +35,7 @@ func (c *CInit) Run(ctx *Context) error {
 
 	err = NewSelect("Pick a mod loader", func(opts *[]huh.Option[kjspkg.ModLoader]) {
 		for _, loader := range kjspkg.ModLoaders {
-			*opts = append(*opts, huh.NewOption(loader.String(), loader))
+			*opts = append(*opts, huh.NewOption(loader.StringLong(), loader))
 		}
 	}, &c.Modloader, "")
 	if err != nil {
