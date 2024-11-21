@@ -43,7 +43,6 @@ func (c *CPkg) Run(ctx *Context) error {
 		return nil
 	}
 
-	fmt.Printf("\n")
 	fmt.Printf(colr.Bold(colr.Blue("%s"))+" by "+colr.Blue("%s")+"\n", commons.TitleCase(c.Package), pkg.Author)
 	fmt.Printf("%s\n", pkg.Description)
 	fmt.Printf("\n")
@@ -51,7 +50,10 @@ func (c *CPkg) Run(ctx *Context) error {
 	fmt.Printf(colr.Blue("GitHub:")+" %s\n", loc.URLFrontend())
 	fmt.Printf(colr.Blue("Views:")+" %-6d  "+colr.Blue("Downloads:")+" %-6d\n", pkg.Views, pkg.Downloads)
 	fmt.Printf("\n")
-	fmt.Printf(colr.Blue("Available for:")+" %s on %s\n", strings.Join(loaders, ", "), strings.Join(versions, ", "))
+	fmt.Printf(colr.Blue("Available for:") + "\n")
+	fmt.Printf(colr.Blue("  Modloaders:")+" %s\n", strings.Join(loaders, ", "))
+	fmt.Printf(colr.Blue("  Versions:")+" %s\n", strings.Join(versions, ", "))
+	fmt.Printf("\n")
 	fmt.Printf(colr.Blue("Dependencies:")+" %s\n", kjspkg.DepsJoin(pkg.Dependencies))
 	fmt.Printf(colr.Blue("Incompatibilities:")+" %s\n", kjspkg.DepsJoin(pkg.Incompatibilities))
 

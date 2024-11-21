@@ -27,14 +27,18 @@ func remove[T comparable](slice []T, s int) []T {
 func LoadLocators() (map[string]kjspkg.PackageLocator, error) {
 	var packages map[string]kjspkg.PackageLocator
 	packages, err := kjspkg.GetPackageList()
-	info("Parsed package list")
+	if cli.Verbose {
+		info("Parsed package list")
+	}
 	return packages, err
 }
 
 func LoadPackage(ref kjspkg.PackageLocator, withStats bool) (kjspkg.Package, error) {
 	var pkg kjspkg.Package
 	pkg, err := kjspkg.GetPackage(ref, withStats)
-	info("Obtained package metadata")
+	if cli.Verbose {
+		info("Obtained package metadata")
+	}
 	return pkg, err
 }
 
@@ -54,4 +58,11 @@ func LoadPackageById(id string, withStats bool) (kjspkg.Package, kjspkg.PackageL
 
 	pkg, err = LoadPackage(loc, withStats)
 	return pkg, loc, err
+}
+
+func If[T any](cond bool, a, b T) T {
+	if cond {
+		return a
+	}
+	return b
 }

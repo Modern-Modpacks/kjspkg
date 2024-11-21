@@ -59,7 +59,7 @@ func (c *CInstall) Run(ctx *Context) error {
 	for _, ref := range toInstall {
 		errs.Go(func() error {
 			startTime := time.Now()
-			assets, err := kjspkg.Install(ctx.Path, ref, cfg, c.Update)
+			assets, err := kjspkg.Install(ctx.Path, ref, cfg, c.Update, If(ctx.Verbose, os.Stdout, nil))
 			tookTime := time.Since(startTime).Milliseconds()
 			fmt.Printf(colr.Green(" +")+" %s "+colr.Dim("(took %dms)\n"), ref.Id, tookTime)
 			cfg.Installed[ref.Id] = assets

@@ -3,6 +3,7 @@ package kjspkg
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -16,7 +17,7 @@ import (
 // This will also update/reinstall packages that have already been installed.
 // If mass is provided, some actions won't be done that may cause other concurrent
 // install calls to fail, like deleting the tmp directory.
-func Install(path string, loc PackageLocator, cfg *Config, mass bool) ([]string, error) {
+func Install(path string, loc PackageLocator, cfg *Config, mass bool, stdout io.Writer) ([]string, error) {
 	if !mass {
 		os.RemoveAll(filepath.Join(path, "tmp"))
 	}
@@ -31,13 +32,13 @@ func Install(path string, loc PackageLocator, cfg *Config, mass bool) ([]string,
 		return nil, err
 	}
 
-	err = InstallClone(path, loc)
+	err = InstallClone(path, loc, stdout)
 	if err != nil {
 		return nil, err
 	}
 
 	if loc.Branch == nil {
-		err = InstallBranch(path, loc)
+		err = InstallBranch(path, loc, stdout)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +82,7 @@ func InstallDiscardExisting(path string, loc PackageLocator, cfg *Config) error 
 	return Remove(path, loc.Id, cfg)
 }
 
-func InstallClone(path string, loc PackageLocator) error {
+func InstallClone(path string, loc PackageLocator, stdout io.Writer) error {
 	err := os.MkdirAll(filepath.Join(path, "tmp", loc.Id), 0744)
 	if err != nil {
 		return err
@@ -89,13 +90,15 @@ func InstallClone(path string, loc PackageLocator) error {
 
 	cmd := exec.Command("git", "clone", loc.URLBase(), loc.Id)
 	cmd.Dir = filepath.Join(path, "tmp")
+	cmd.Stdout = stdout
+	cmd.Stderr = stdout
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 	return cmd.Wait()
 }
 
-func InstallBranch(path string, loc PackageLocator) error {
+func InstallBranch(path string, loc PackageLocator, stdout io.Writer) error {
 	if loc.Branch == nil {
 		return nil
 	}
@@ -103,6 +106,8 @@ func InstallBranch(path string, loc PackageLocator) error {
 	// TODO: migrate to 'git switch'
 	cmd := exec.Command("git", "checkout", *loc.Branch)
 	cmd.Dir = filepath.Join(path, "tmp", loc.Id)
+	cmd.Stdout = stdout
+	cmd.Stderr = stdout
 	return cmd.Run()
 }
 
