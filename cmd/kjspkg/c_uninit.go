@@ -18,7 +18,13 @@ type CUninit struct {
 func (c *CUninit) Run(ctx *Context) error {
 	if !c.Confirm {
 		warn(colr.Red("DOING THIS WILL REMOVE ALL PACKAGES AND UNINSTALL KJSPKG COMPLETELY!"))
-		return fmt.Errorf("please use --confirm to continue")
+		confirm := false
+		if err := NewConfirm("Are you sure?", "You can't undo this, which may cause data loss!", &confirm, false); err != nil {
+			return err
+		}
+		if !confirm {
+			return fmt.Errorf("aborted")
+		}
 	}
 
 	cfg, err := kjspkg.GetConfig(ctx.Path, true)

@@ -80,6 +80,19 @@ func NewMultiSelect[T comparable](
 	return sel.WithTheme(huh.ThemeBase16()).Run()
 }
 
+// NewConfirm is a wrapper function that displays a confirmation prompt.
+func NewConfirm(title string, description string, selected *bool, askIf bool) error {
+	if !askIf == *selected {
+		return nil
+	}
+	return huh.NewConfirm().
+		Title(title).
+		Description(description).
+		Value(selected).
+		WithTheme(huh.ThemeBase16()).
+		Run()
+}
+
 // NewInput is a wrapper function that displays a selection prompt only if
 // the provided variable isn't empty and can be validated.
 func NewInput(
