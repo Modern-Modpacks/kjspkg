@@ -64,7 +64,7 @@ func CollectPackages(refs map[string]PackageLocator, cfg *Config, id string, tru
 			}
 		} else if mods != nil {
 			dep = strings.TrimPrefix(dep, "mod:")
-			if _, ok := mods[dep]; ok {
+			if _, ok := mods[dep]; !ok {
 				return nil, fmt.Errorf("%s requires mod %s, but not found", ref.Id, dep)
 			}
 		}

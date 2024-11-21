@@ -37,9 +37,7 @@ func GetMods(path string, modlessOk bool, corruptedOk bool) (map[string]string, 
 			}
 			defer r.Close()
 
-			var modID, modVersion string
 			var foundManifest bool
-
 			for _, f := range r.File {
 				forgeLike, fabricLike := strings.HasSuffix(f.Name, "mods.toml"), strings.HasSuffix(f.Name, ".mod.json")
 				if forgeLike || fabricLike {
@@ -66,8 +64,9 @@ func GetMods(path string, modlessOk bool, corruptedOk bool) (map[string]string, 
 							continue
 						}
 						if len(manifest.Mods) > 0 {
-							modID = manifest.Mods[0].ModId
-							modVersion = manifest.Mods[0].Version
+							for _, mod := range manifest.Mods {
+								modVersions[mod.ModId] = mod.Version
+							}
 							foundManifest = true
 						}
 					} else if fabricLike {
@@ -82,16 +81,13 @@ func GetMods(path string, modlessOk bool, corruptedOk bool) (map[string]string, 
 							}
 							continue
 						}
-						modID = manifest.ID
-						modVersion = manifest.Version
+						modVersions[manifest.ID] = manifest.Version
 						foundManifest = true
 					}
 				}
 			}
 
-			if foundManifest {
-				modVersions[modID] = modVersion
-			} else if !corruptedOk {
+			if !foundManifest && !corruptedOk {
 				return nil, fmt.Errorf("manifest not found in mod file %s", file.Name())
 			}
 		}
