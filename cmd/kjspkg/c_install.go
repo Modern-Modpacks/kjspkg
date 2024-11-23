@@ -18,12 +18,17 @@ type CInstall struct {
 	NoModCheck    bool     `help:"If mod dependency check should be skipped"`
 	Skipmissing   bool     `help:"Skips dependencies that can't be found"`
 	Update        bool     `help:"If packages already downloaded should be updated (same as 'update')"`
+	NoInstall     bool     `help:"If new packages should not be installed (requires --update)" hidden:""`
 }
 
 func (c *CInstall) Run(ctx *Context) error {
 	cfg, err := kjspkg.GetConfig(ctx.Path, false)
 	if err != nil {
 		return err
+	}
+
+	if c.NoInstall && !c.Update {
+		return fmt.Errorf("--no-install requires --update")
 	}
 
 	refs, err := LoadLocators() // this caches them
@@ -54,7 +59,7 @@ func (c *CInstall) Run(ctx *Context) error {
 	}
 
 	errs, _ := errgroup.WithContext(context.Background())
-	info("Installing")
+	info(If(c.NoInstall, "Updating", "Installing"))
 	os.RemoveAll(filepath.Join(ctx.Path, "tmp"))
 	for _, ref := range toInstall {
 		errs.Go(func() error {
@@ -71,7 +76,7 @@ func (c *CInstall) Run(ctx *Context) error {
 	}
 
 	os.RemoveAll(filepath.Join(ctx.Path, "tmp"))
-	info("Successfully installed %d package(s)!", len(toInstall))
+	info("Successfully %s %d package(s)!", If(c.NoInstall, "updated", "installed"), len(toInstall))
 	kjspkg.SetConfig(ctx.Path, cfg)
 	return nil
 }

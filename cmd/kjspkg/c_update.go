@@ -40,6 +40,7 @@ func (c *CUpdate) Run(ctx *Context) error {
 		NoModCheck:    c.NoModCheck,
 		Skipmissing:   c.Skipmissing,
 		Update:        true,
+		NoInstall:     true,
 	}
 	return cmd.Run(ctx)
 }
