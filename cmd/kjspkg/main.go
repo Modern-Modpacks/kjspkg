@@ -26,7 +26,7 @@ var cli struct {
 	Verbose bool   `help:"Print verbose"`
 	Quiet   bool   `help:"No non-error output" short:"q" hidden:""`
 	Path    string `help:"Path to KubeJS directory (defaults to current)" default:"." type:"existingdir"`
-	Source  string `help:"URL source to package list" type:"url"`
+	Source  string `help:"URL source to package list (takes preference over KJSPKG_REPO envvar)" type:"url"`
 
 	Install   CInstall        `cmd:"" help:"Installs packages" aliases:"download"`
 	Remove    CRemove         `cmd:"" help:"Removes packages" aliases:"uninstall"`
