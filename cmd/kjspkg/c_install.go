@@ -54,8 +54,8 @@ func (c *CInstall) Run(ctx *Context) error {
 		}
 		for dep, loc := range list {
 			if c.NoInstall {
-				if _, ok := cfg.Installed[dep]; !ok {
-					return fmt.Errorf("package %s is not installed", dep)
+				if _, ok := cfg.Installed[loc.Id]; !ok {
+					return fmt.Errorf("package %s is not installed", loc.Id)
 				}
 			}
 			toInstall[dep] = loc
