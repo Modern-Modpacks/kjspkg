@@ -1,80 +1,68 @@
-# KJSPKG
+# <img alt="icon" height="32" src="https://user-images.githubusercontent.com/79367505/227798123-5454e9b1-b39b-4c45-9e02-e18f2e807585.png"> KJSPKG
 
-A simple package manager for KubeJS.
+A simple package manager for KubeJS written in Go.
 
-[![contributions](https://github.com/Modern-Modpacks/kjspkg/assets/79367505/d2519e70-ce96-4bbc-b35b-af3e674bf421)](https://github.com/Modern-Modpacks/kjspkg#adding-your-own-package)
-[![lat](https://img.shields.io/badge/approved%20by-lat-c374e4?style=for-the-badge&labelColor=480066)](https://github.com/user-attachments/assets/0df64919-6333-447e-9869-c270138941bd)
+[![Contributions welcome](https://github.com/Modern-Modpacks/kjspkg/assets/79367505/d2519e70-ce96-4bbc-b35b-af3e674bf421)](https://github.com/Modern-Modpacks/kjspkg#adding-your-own-package)
+[![Approved by latvian.dev](https://img.shields.io/badge/approved%20by-lat-c374e4?style=for-the-badge&labelColor=480066)](https://github.com/user-attachments/assets/0df64919-6333-447e-9869-c270138941bd)
 
-![logo](https://user-images.githubusercontent.com/79367505/227798123-5454e9b1-b39b-4c45-9e02-e18f2e807585.png)
+**The Go API exposed at github.com/Modern-Modpacks/kjspkg/pkg/kjspkg is not
+stable. It is not recommended to use it just yet.**
 
 ## Installation & Update
 
-### Requirements
+### Install script
 
-* [Python 3.8](https://www.python.org/) (or higher)
-* Pip
-* [Git](https://git-scm.com/)
-* [Curl](https://curl.se/) (probably pre-installed)
-
-### Linux
+This script will install KJSPKG to your system and add it to your PATH.
 
 ```sh
-curl -s https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.sh | sh
+# On Linux
+curl -fsSL https://g.tizu.dev/mm.kj/install.sh?r | bash
+# On Windows
+powershell -c "irm https://g.tizu.dev/mm.kj/install.ps1?r | iex"
 ```
 
-### Windows
+<!-- ### Arch Linux
 
-Download [this bat file](https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/install.bat) and run it
+KJSPKG is available in the AUR as `kjspkg-git`.
 
-or use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)
+```sh
+paru -S kjspkg-git
+``` -->
+
+<!-- ### winget
+
+KJSPKG is available in the winget repository as `modernmodpacks.kjspkg`.
+
+```sh
+winget install modernmodpacks.kjspkg
+``` -->
+
+### Using Go
+
+This requires a working Go installation of at least 1.23.2.
+
+```sh
+go install github.com/Modern-Modpacks/kjspkg/cmd/kjspkg@latest
+```
 
 ## Usage
 
-Installing packages:
+KJSPKG comes with extensive help text, so you can just run `kjspkg` to see all
+the commands and options available. You may also use `--help` after any command
+to get more information about it.
 
 ```sh
 kjspkg install [package] [package]
-kjspkg install kjspkg:[package]
-kjspkg install carbon:[package] # CarbonJS compatibility (https://github.com/carbon-kjs)
-kjspkg install github:[author]/[package] # External packages
-```
-
-Removing packages:
-
-```sh
 kjspkg remove [package] [package]
-```
-
-Updating packages:
-
-```sh
 kjspkg update [package] [package]
-```
-
-More info in the help page:
-
-```sh
-kjspkg help
 ```
 
 ## Adding your own package
 
 1. Create a repository containing your scripts and assets
 2. [Don't forget to license your code](https://choosealicense.com/)
-3. Add a file to your repo named `.kjspkg` and format it like this:
-
-    ```json
-    {
-        "author": "<your_name>",
-        "description": "<description>",
-        
-        "versions": [<Version key numbers (see the numbers in parentheses in the table below, or use this formula: "version title = 1.(version key + 10).whatever"). Can contain multiple numbers>],
-        "modloaders": [<Modloaders ("fabric"/"forge", "fabric" will for quilt as well)>. Can contain multiple modloaders],
-        "dependencies": [<Package names that your package depends on, blank if none. To depend on mods add "mod:" before the mod id>],
-        "incompatibilities": [<Package names that your package is incompatible with, blank if none. Incompatible mods are also supported (use the same syntax)>]
-    }
-    ```
-
+3. Create an empty directory and run `kjspkg dev init`
+4. Do your thing and create a repository with the code
 4. Fork this repo
 5. Clone it
 6. Add your package to `pkgs.json` file. Format it like this: `"your_package_id": "your_github_name/your_repo_name[$path/to/your/package/directory][@branch_name]",`
@@ -83,6 +71,7 @@ kjspkg help
     * Branch is `main` by default
 7. Create a pull request
 8. Wait for it to be accepted
+9. profit <!-- im not even kidding, copilot wrote this -->
 
 ### KJSPKG badges
 
@@ -95,8 +84,6 @@ kjspkg help
 ## Supported versions
 
 ![Version list](https://github.com/user-attachments/assets/5a3b8e3a-bd91-456e-8443-bbffa894a38f)
-
-(Thanks tizu.dev on discord for the figma template)
 
 Tested means that the version is confirmed to be working;
 
