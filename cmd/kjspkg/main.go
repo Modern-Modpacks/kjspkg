@@ -66,6 +66,10 @@ func main() {
 	if cli.Quiet {
 		os.Stdout.Close()
 	}
+
+	if os.Getenv("KJSPKG_REPO") != "" {
+		kjspkg.PackageList = os.Getenv("KJSPKG_REPO")
+	}
 	if cli.Source != "" {
 		kjspkg.PackageList = cli.Source
 	}
