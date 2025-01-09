@@ -83,6 +83,6 @@
     "auto-third-person": "Notenoughmail/kube-scripts$1-20/auto-third-person",
 
     "lychee-schema": "9thCore/KubeJS_Customs$kubejs-packages/lychee-schema/1.20",
-    "hamterhavoc": "bradisatomato/hamterhavoc",
-    "testing-do-not-merge": "tizu69/kubejs-testing"
+    "hamterhavoc": "bradisatomato/hamterhavoc",,
+    "testing": "tizu69/kubejs-testing-2"
 }
