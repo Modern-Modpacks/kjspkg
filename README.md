@@ -59,6 +59,23 @@ kjspkg update [package] [package]
 
 ## Adding your own package
 
+### Through [KJSPKG Lookup](https://kjspkglookup.modernmodpacks.site) (Web UI)
+
+You now have the ability to upload packages using [KJSPKG Lookup](https://kjspkglookup.modernmodpacks.site), a web tool originally meant to quickly search for packages on KJSPKG, but it now supports the addition of them as well.
+
+1. Go to https://kjspkglookup.modernmodpacks.site/
+2. Click the user icon in the top right corner and log in using your GitHub account
+3. Click on your profile picture. That should lead you to your KJSPKG profile; from there you can press the plus icon to create a new package
+4. Fill in all the required details and upload the scripts
+5. Press publish and wait for your script to be approved by us, then it should appear on the website
+6. profit
+
+**NOTE:** There is currently a known bug concerning GitHub authentication permissions which can cause an error during the last step. This is why we recommend **you first log out and log back into your GitHub account before starting the process of uploading the package** if it's your first time using the KJSPKG Lookup website.
+
+### Manual setup
+
+If other methods don't fit your particular situation or you just want a higher degree of control, you can set up the repository for your package manually using Git.
+
 1. Create a repository containing your scripts and assets
 2. [Don't forget to license your code](https://choosealicense.com/)
 3. Create an empty directory and run `kjspkg dev init`
