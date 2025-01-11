@@ -84,5 +84,9 @@
 
     "lychee-schema": "9thCore/KubeJS_Customs$kubejs-packages/lychee-schema/1.20",
     "hamterhavoc": "bradisatomato/hamterhavoc",
-    "clones": "liopyu/kubejs-clones"
+    "clones": "liopyu/kubejs-clones",
+
+    "kubejs-playground-yc": "YukkuriC/kubejs_playground",
+    "hex-playground-yc": "YukkuriC/hex_playground",
+    "hex-playground-yc-19": "YukkuriC/hex_playground@1.19"
 }
