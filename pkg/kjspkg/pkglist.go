@@ -12,7 +12,7 @@ import (
 )
 
 var PackageList = "https://raw.githubusercontent.com/Modern-Modpacks/kjspkg/main/pkgs.json"
-var httpClient = http.Client{Timeout: time.Second * 10}
+var httpClient = http.Client{Timeout: time.Second * 60}
 var packageListCache map[string]PackageLocator
 
 func GetPackageList() (map[string]PackageLocator, error) {
