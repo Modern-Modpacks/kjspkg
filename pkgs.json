@@ -72,8 +72,10 @@
     "kubejs-copypaste": "DevDyna/Kubejs-CopyPaste",
     "script-collection": "DevDyna/kubejs-testing",
 
+    "better-note-block": "omgimanerd/kubejs-utilities$better-note-block@master",
     "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master",
-    "sequenced-assembly": "omgimanerd/kubejs-utilities$SequencedAssembly@master",
+    "recipe-schemas": "omgimanerd/kubejs-utilities$recipe-schemas@master",
+    "sequenced-assembly": "omgimanerd/kubejs-utilities$sequenced-assembly@master",
 
     "faster-climbing": "FalAut/FalAut-KubeJScripts$scripts/Faster_Climbing@2001",
     "numerical-mana-in-jade": "FalAut/FalAut-KubeJScripts$scripts/Numerical_Mana_In_Jade@2001",
