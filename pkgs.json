@@ -11,6 +11,7 @@
     "more-recipe-types": "gcatkjspkgs/kubejs-more-recipe-types",
     "boss-tools-oxygen": "gcatkjspkgs/boss-tools-oxygen-js",
     "lightlevel-spawning-backport": "gcatkjspkgs/lightlevel-spawning-backport",
+    "invisiblelightsjs": "gcatkjspkgs/invisiblelightsjs",
     "bad-apple": "gcatkjspkgs/bad-apple",
 
     "unifico": "glomdom/unifico@master",
