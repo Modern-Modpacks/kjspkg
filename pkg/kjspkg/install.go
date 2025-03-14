@@ -143,6 +143,25 @@ func InstallCopy[L LocEsque](path string, loc L) ([]string, error) {
 		}
 	}
 
+	// Copy LICENSE, LICENSE.txt, LICENSE.md, COPYING, COPYING.txt, or COPYING.md
+	lics := [...]string{"LICENSE", "COPYING"}
+	licexts := [...]string{"", ".txt", ".md"}
+	for _, name := range lics {
+		for _, ext := range licexts {
+			name = name + ext // this is somewhat scuffed but eh
+			source := filepath.Join(repoPath, name)
+			if _, err := os.Stat(source); err != nil {
+				continue
+			}
+			for _, scriptDir := range ScriptDirs {
+				target := filepath.Join(path, scriptDir, ".kjspkg", id, name)
+				if err := cp.Copy(source, target); err != nil {
+					return nil, fmt.Errorf("license copy: %w", err)
+				}
+			}
+		}
+	}
+
 	assets := []string{}
 	for _, name := range AssetDirs {
 		root := filepath.Join(repoPath, name)
