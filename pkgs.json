@@ -76,6 +76,7 @@
     "better-note-block": "omgimanerd/kubejs-utilities$better-note-block@master",
     "parse-text-format": "omgimanerd/kubejs-utilities$parse-text-format@master",
     "recipe-schemas": "omgimanerd/kubejs-utilities$recipe-schemas@master",
+    "reload": "omgimanerd/kubejs-utilities$reload@master",
     "sequenced-assembly": "omgimanerd/kubejs-utilities$sequenced-assembly@master",
 
     "faster-climbing": "FalAut/FalAut-KubeJScripts$scripts/Faster_Climbing@2001",
