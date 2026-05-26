@@ -97,5 +97,6 @@
 
     "titanors-dynamic-seasons-kubejs-script": "Titanor-Soulstone/kubejs-titanors-dynamic-seasons-kubejs-script",
     "titanors-rtc-module": "Titanor-Soulstone/kubejs-titanors-rtc-module",
-    "shipping-bin": "Chakyl/kubejs-shipping-bin"
+    "shipping-bin": "Chakyl/kubejs-shipping-bin",
+    "nacad": "MavorsCodes/kubejs-nacad"
 }
